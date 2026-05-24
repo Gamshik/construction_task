@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { ChevronDown } from 'lucide-react';
 import { WorkLog, WorkType } from '@/api/workLogsApi';
 import { Button } from '@/components/Button/Button';
 import styles from './WorkLogForm.module.scss';
@@ -53,6 +54,23 @@ export const WorkLogForm: React.FC<WorkLogFormProps> = ({
     setErrors({});
   }, [initialData]);
 
+  useEffect(() => {
+    const handleDocumentClick = (e: MouseEvent) => {
+      const selectElement = document.getElementById('workType') as HTMLSelectElement | null;
+      if (selectElement && document.activeElement === selectElement) {
+        const wrapper = selectElement.closest(`.${styles.selectWrapper}`);
+        if (wrapper && !wrapper.contains(e.target as Node)) {
+          selectElement.blur();
+        }
+      }
+    };
+    document.addEventListener('mousedown', handleDocumentClick);
+    return () => {
+      document.removeEventListener('mousedown', handleDocumentClick);
+    };
+  }, []);
+
+
   const selectedWorkType = workTypes.find((wt) => wt.id === workTypeId);
 
   const validate = () => {
@@ -88,8 +106,29 @@ export const WorkLogForm: React.FC<WorkLogFormProps> = ({
     });
   };
 
+  const handleFormClick = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (
+      target.tagName === 'INPUT' ||
+      target.tagName === 'SELECT' ||
+      target.tagName === 'BUTTON' ||
+      target.closest('button') ||
+      target.closest('a')
+    ) {
+      return;
+    }
+    if (
+      document.activeElement &&
+      (document.activeElement.tagName === 'INPUT' ||
+        document.activeElement.tagName === 'SELECT' ||
+        document.activeElement.tagName === 'TEXTAREA')
+    ) {
+      (document.activeElement as HTMLElement).blur();
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit} className={styles.form}>
+    <form onSubmit={handleSubmit} onClick={handleFormClick} className={styles.form}>
       <div className={styles.formGroup}>
         <label htmlFor="date">Дата выполнения</label>
         <input
@@ -105,19 +144,25 @@ export const WorkLogForm: React.FC<WorkLogFormProps> = ({
 
       <div className={styles.formGroup}>
         <label htmlFor="workType">Вид работы</label>
-        <select
-          id="workType"
-          value={workTypeId}
-          onChange={(e) => setWorkTypeId(e.target.value)}
-          className={errors.workTypeId ? styles.inputError : ''}
-        >
-          <option value="">-- Выберите вид работы --</option>
-          {workTypes.map((wt) => (
-            <option key={wt.id} value={wt.id}>
-              {wt.title}
-            </option>
-          ))}
-        </select>
+        <div className={styles.selectWrapper}>
+          <select
+            id="workType"
+            value={workTypeId}
+            onChange={(e) => {
+              setWorkTypeId(e.target.value);
+              e.target.blur();
+            }}
+            className={errors.workTypeId ? styles.inputError : ''}
+          >
+            <option value="">-- Выберите вид работы --</option>
+            {workTypes.map((wt) => (
+              <option key={wt.id} value={wt.id}>
+                {wt.title}
+              </option>
+            ))}
+          </select>
+          <ChevronDown className={styles.selectArrow} size={16} />
+        </div>
         {errors.workTypeId && (
           <span className={styles.errorText}>{errors.workTypeId}</span>
         )}
