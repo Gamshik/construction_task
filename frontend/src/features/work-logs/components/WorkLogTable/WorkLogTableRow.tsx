@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, User, FileText, BarChart, Edit2, Trash2 } from 'lucide-react';
+import { Calendar, User, FileText, BarChart, Edit2, Trash2, CheckCircle, X } from 'lucide-react';
 import { WorkLog } from '@/api/workLogsApi';
 import styles from './WorkLogTable.module.scss';
 
@@ -17,8 +17,10 @@ export const WorkLogTableRow: React.FC<WorkLogTableRowProps> = ({
   isDeleting,
 }) => {
   const [isFadingOut, setIsFadingOut] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
 
-  const handleDeleteClick = () => {
+  const handleDeleteConfirm = () => {
+    setIsConfirming(false);
     setIsFadingOut(true);
     setTimeout(() => {
       onDelete(log.id);
@@ -32,7 +34,7 @@ export const WorkLogTableRow: React.FC<WorkLogTableRowProps> = ({
   });
 
   return (
-    <tr className={`${styles.row} ${isFadingOut ? styles.fadeOut : ''}`}>
+    <tr className={`${styles.row} ${isFadingOut ? styles.fadeOut : ''} ${isConfirming ? styles.rowConfirming : ''}`}>
       <td>
         <div className={styles.cellWithIcon}>
           <Calendar size={15} className={styles.iconMuted} />
@@ -60,22 +62,45 @@ export const WorkLogTableRow: React.FC<WorkLogTableRowProps> = ({
         </div>
       </td>
       <td>
-        <div className={styles.actions}>
-          <button
-            className={styles.editBtn}
-            onClick={() => onEdit(log)}
-            title="Редактировать запись"
-          >
-            <Edit2 size={15} />
-          </button>
-          <button
-            className={styles.deleteBtn}
-            onClick={handleDeleteClick}
-            disabled={isDeleting}
-            title="Удалить запись"
-          >
-            <Trash2 size={15} />
-          </button>
+        <div className={`${styles.actions} ${isConfirming ? styles.confirmingState : ''}`}>
+          {isConfirming ? (
+            <>
+              <span className={styles.confirmText}>Удалить?</span>
+              <button
+                className={styles.confirmBtn}
+                onClick={handleDeleteConfirm}
+                disabled={isDeleting}
+                title="Подтвердить удаление"
+              >
+                <CheckCircle size={15} />
+              </button>
+              <button
+                className={styles.cancelBtn}
+                onClick={() => setIsConfirming(false)}
+                title="Отмена"
+              >
+                <X size={15} />
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                className={styles.editBtn}
+                onClick={() => onEdit(log)}
+                title="Редактировать запись"
+              >
+                <Edit2 size={15} />
+              </button>
+              <button
+                className={styles.deleteBtn}
+                onClick={() => setIsConfirming(true)}
+                disabled={isDeleting}
+                title="Удалить запись"
+              >
+                <Trash2 size={15} />
+              </button>
+            </>
+          )}
         </div>
       </td>
     </tr>
