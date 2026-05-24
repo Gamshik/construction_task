@@ -80,11 +80,6 @@
 .selectWrapper {
   position: relative;
   width: 100%;
-
-  select:focus ~ .selectArrow {
-    transform: rotate(180deg);
-    color: $color-primary;
-  }
 }
 
 .selectArrow {
