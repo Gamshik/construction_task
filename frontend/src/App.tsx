@@ -56,11 +56,25 @@ function App() {
   } = useWorkLogFilters(workLogs);
 
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [toastTimeout, setToastTimeout] = useState<any>(null);
 
   const showNotification = (type: 'success' | 'error', message: string) => {
+    if (toastTimeout) {
+      clearTimeout(toastTimeout);
+    }
     setNotification({ type, message });
-    setTimeout(() => setNotification(null), 4000);
+    const id = setTimeout(() => {
+      setNotification(null);
+      setToastTimeout(null);
+    }, 2500);
+    setToastTimeout(id);
   };
+
+  useEffect(() => {
+    return () => {
+      if (toastTimeout) clearTimeout(toastTimeout);
+    };
+  }, [toastTimeout]);
 
   const handleAddClick = () => {
     setEditingLog(null);

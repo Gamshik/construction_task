@@ -179,7 +179,7 @@
   font-size: 0.88rem;
   font-weight: 500;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
-  animation: slideDownToast 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: toastLife 2.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   background: var(--surface-color);
@@ -198,14 +198,22 @@
   background: rgba(255, 69, 58, 0.05); // Subtle red tint
 }
 
-@keyframes slideDownToast {
-  from {
+@keyframes toastLife {
+  0% {
     opacity: 0;
     transform: translate(-50%, -20px) scale(0.95);
   }
-  to {
+  14% {
     opacity: 1;
     transform: translate(-50%, 0) scale(1);
+  }
+  86% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -20px) scale(0.95);
   }
 }
 
