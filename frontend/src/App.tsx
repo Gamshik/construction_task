@@ -1,0 +1,215 @@
+import { useState } from 'react';
+import { Plus, HardHat, Info, CheckCircle, AlertCircle, BarChart3, Users, CalendarDays } from 'lucide-react';
+import {
+  useWorkLogs,
+  useWorkTypes,
+  useCreateWorkLog,
+  useUpdateWorkLog,
+  useDeleteWorkLog,
+  WorkLog,
+} from '@/api/workLogsApi';
+import { useWorkLogFilters } from '@/features/work-logs/hooks/useWorkLogFilters';
+import { WorkLogFilters } from '@/features/work-logs/components/WorkLogFilters/WorkLogFilters';
+import { WorkLogTable } from '@/features/work-logs/components/WorkLogTable/WorkLogTable';
+import { Modal } from '@/components/Modal/Modal';
+import { WorkLogForm } from '@/features/work-logs/components/WorkLogForm/WorkLogForm';
+import { Button } from '@/components/Button/Button';
+
+import styles from './App.module.scss';
+
+function App() {
+  const { data: workLogs = [], isLoading: isLoadingLogs } = useWorkLogs();
+  const { data: workTypes = [] } = useWorkTypes();
+
+  const createMutation = useCreateWorkLog();
+  const updateMutation = useUpdateWorkLog();
+  const deleteMutation = useDeleteWorkLog();
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingLog, setEditingLog] = useState<WorkLog | null>(null);
+
+  const {
+    startDate,
+    setStartDate,
+    endDate,
+    setEndDate,
+    searchQuery,
+    setSearchQuery,
+    sortOrder,
+    setSortOrder,
+    filteredAndSortedLogs,
+    clearFilters,
+  } = useWorkLogFilters(workLogs);
+
+  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  const showNotification = (type: 'success' | 'error', message: string) => {
+    setNotification({ type, message });
+    setTimeout(() => setNotification(null), 4000);
+  };
+
+  const handleAddClick = () => {
+    setEditingLog(null);
+    setIsModalOpen(true);
+  };
+
+  const handleEditClick = (log: WorkLog) => {
+    setEditingLog(log);
+    setIsModalOpen(true);
+  };
+
+  const handleFormSubmit = async (formData: {
+    date: string;
+    workTypeId: string;
+    volume: number;
+    executorName: string;
+  }) => {
+    if (editingLog) {
+      updateMutation.mutate(
+        { id: editingLog.id, ...formData },
+        {
+          onSuccess: () => {
+            showNotification('success', 'Запись успешно обновлена');
+            setIsModalOpen(false);
+          },
+          onError: (err: any) => {
+            const msg = err.response?.data?.message || 'Ошибка обновления записи';
+            showNotification('error', Array.isArray(msg) ? msg[0] : msg);
+          },
+        }
+      );
+    } else {
+      createMutation.mutate(formData, {
+        onSuccess: () => {
+          showNotification('success', 'Запись успешно добавлена в журнал');
+          setIsModalOpen(false);
+        },
+        onError: (err: any) => {
+          const msg = err.response?.data?.message || 'Ошибка добавления записи';
+          showNotification('error', Array.isArray(msg) ? msg[0] : msg);
+        },
+      });
+    }
+  };
+
+  const handleDelete = (id: string) => {
+    deleteMutation.mutate(id, {
+      onSuccess: () => {
+        showNotification('success', 'Запись удалена из журнала');
+      },
+      onError: () => {
+        showNotification('error', 'Ошибка удаления записи');
+      },
+    });
+  };
+
+  const totalEntries = workLogs.length;
+  const uniqueExecutors = new Set(workLogs.map((wl) => wl.executorName)).size;
+  const todayEntries = workLogs.filter((wl) => {
+    const logDate = new Date(wl.date).toDateString();
+    const today = new Date().toDateString();
+    return logDate === today;
+  }).length;
+
+  return (
+    <div className={styles.appContainer}>
+      {notification && (
+        <div className={`${styles.toast} ${styles[notification.type]}`}>
+          {notification.type === 'success' ? <CheckCircle size={18} /> : <AlertCircle size={18} />}
+          <span>{notification.message}</span>
+        </div>
+      )}
+
+      <header className={styles.header}>
+        <div className={styles.headerBrand}>
+          <div className={styles.logoBox}>
+            <HardHat size={28} className={styles.logoIcon} />
+          </div>
+          <div>
+            <h1>Журнал работ</h1>
+            <p className={styles.subtitle}>Система учета и контроля строительных процессов</p>
+          </div>
+        </div>
+
+        <Button onClick={handleAddClick} variant="primary" className={styles.addBtn}>
+          <Plus size={18} />
+          <span>Добавить запись</span>
+        </Button>
+      </header>
+
+      <section className={styles.metrics}>
+        <div className={styles.metricCard}>
+          <div className={styles.metricHeader}>
+            <span className={styles.metricTitle}>Всего записей</span>
+            <BarChart3 className={styles.metricIconAccent} size={20} />
+          </div>
+          <span className={styles.metricValue}>{isLoadingLogs ? '...' : totalEntries}</span>
+          <span className={styles.metricDesc}>за все время</span>
+        </div>
+
+        <div className={styles.metricCard}>
+          <div className={styles.metricHeader}>
+            <span className={styles.metricTitle}>Исполнителей</span>
+            <Users className={styles.metricIconAccent} size={20} />
+          </div>
+          <span className={styles.metricValue}>{isLoadingLogs ? '...' : uniqueExecutors}</span>
+          <span className={styles.metricDesc}>активных бригадиров</span>
+        </div>
+
+        <div className={styles.metricCard}>
+          <div className={styles.metricHeader}>
+            <span className={styles.metricTitle}>За сегодня</span>
+            <CalendarDays className={styles.metricIconAccent} size={20} />
+          </div>
+          <span className={styles.metricValue}>{isLoadingLogs ? '...' : todayEntries}</span>
+          <span className={styles.metricDesc}>выполнено смен</span>
+        </div>
+      </section>
+
+      <main className={styles.mainContent}>
+        <WorkLogFilters
+          startDate={startDate}
+          setStartDate={setStartDate}
+          endDate={endDate}
+          setEndDate={setEndDate}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          sortOrder={sortOrder}
+          setSortOrder={setSortOrder}
+          clearFilters={clearFilters}
+        />
+
+        <WorkLogTable
+          workLogs={filteredAndSortedLogs}
+          onEdit={handleEditClick}
+          onDelete={handleDelete}
+          isDeleting={deleteMutation.isPending}
+          isLoading={isLoadingLogs}
+        />
+      </main>
+
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={editingLog ? 'Редактировать запись' : 'Добавить запись в журнал'}
+      >
+        <WorkLogForm
+          workTypes={workTypes}
+          initialData={editingLog}
+          onSubmit={handleFormSubmit}
+          isSubmitting={createMutation.isPending || updateMutation.isPending}
+          onCancel={() => setIsModalOpen(false)}
+        />
+      </Modal>
+
+      <footer className={styles.footer}>
+        <div className={styles.footerInfo}>
+          <Info size={14} />
+          <span>Hexagonal Clean Architecture &bull; React + Vite &bull; NestJS + Prisma &bull; SCSS Modules</span>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+export default App;

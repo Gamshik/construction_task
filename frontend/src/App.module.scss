@@ -1,0 +1,190 @@
+@use './styles/variables' as *;
+@use './styles/mixins' as *;
+
+.appContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 24px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  gap: 32px;
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+// Header
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+
+  @include respond-to('sm') {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.headerBrand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  h1 {
+    font-family: $font-family;
+    font-size: 2.2rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, $color-text-main 30%, $color-text-muted 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+}
+
+.logoBox {
+  width: 52px;
+  height: 52px;
+  background: hsla(150, 80%, 40%, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: $radius-lg;
+  box-shadow: 0 0 15px $color-primary-glow;
+  animation: pulse-glow 3s ease-in-out infinite;
+
+  .logoIcon {
+    color: $color-primary;
+  }
+}
+
+.subtitle {
+  font-size: 0.95rem;
+  color: $color-text-muted;
+  font-weight: 500;
+}
+
+.addBtn {
+  font-size: 1rem;
+  padding: 12px 24px;
+}
+
+// Metrics section
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  width: 100%;
+}
+
+.metricCard {
+  @include glassmorphism;
+  @include card-glowing-border;
+  border-radius: $radius-lg;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: $shadow-md;
+  transition: $transition-smooth;
+  border-color: hsla(210, 15%, 70%, 0.08);
+}
+
+.metricHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.metricTitle {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: $color-text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.metricIconAccent {
+  color: $color-primary;
+  opacity: 0.75;
+}
+
+.metricValue {
+  font-size: 2.5rem;
+  font-weight: 800;
+  font-family: $font-family;
+  color: $color-text-main;
+  line-height: 1;
+}
+
+.metricDesc {
+  font-size: 0.82rem;
+  color: $color-text-darker;
+  font-weight: 500;
+}
+
+// Main Content
+.mainContent {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+// Toast Notifications
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-radius: $radius-md;
+  font-size: 0.92rem;
+  font-weight: 600;
+  box-shadow: $shadow-lg;
+  animation: slideInToast 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid transparent;
+}
+
+.success {
+  background: rgba(4, 30, 20, 0.85);
+  color: $color-primary;
+  border-color: rgba(16, 185, 129, 0.25);
+  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.1);
+}
+
+.error {
+  background: rgba(30, 4, 4, 0.85);
+  color: $color-error;
+  border-color: rgba(239, 68, 68, 0.25);
+  box-shadow: 0 10px 30px rgba(239, 68, 68, 0.1);
+}
+
+@keyframes slideInToast {
+  from { opacity: 0; transform: translateY(40px) scale(0.9); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+// Footer
+.footer {
+  margin-top: auto;
+  padding-top: 24px;
+  border-top: 1px solid $border-color;
+  display: flex;
+  justify-content: center;
+}
+
+.footerInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: $color-text-darker;
+  font-weight: 500;
+  text-align: center;
+}
