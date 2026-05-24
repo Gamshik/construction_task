@@ -152,6 +152,17 @@ export const WorkLogForm: React.FC<WorkLogFormProps> = ({
               setWorkTypeId(e.target.value);
               e.target.blur();
             }}
+            onMouseDown={(e) => {
+              if (document.activeElement === e.currentTarget) {
+                e.preventDefault();
+                e.currentTarget.blur();
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') {
+                e.currentTarget.blur();
+              }
+            }}
             className={errors.workTypeId ? styles.inputError : ''}
           >
             <option value="">-- Выберите вид работы --</option>
