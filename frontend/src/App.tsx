@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Plus, HardHat, Info, CheckCircle, AlertCircle, BarChart3, Users, CalendarDays } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Plus, HardHat, Info, CheckCircle, AlertCircle, BarChart3, Users, CalendarDays, Sun, Moon } from 'lucide-react';
 import {
   useWorkLogs,
   useWorkTypes,
@@ -27,6 +27,20 @@ function App() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingLog, setEditingLog] = useState<WorkLog | null>(null);
+
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    const saved = localStorage.getItem('theme');
+    return (saved === 'light' || saved === 'dark') ? saved : 'dark';
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  };
 
   const {
     startDate,
@@ -131,10 +145,20 @@ function App() {
           </div>
         </div>
 
-        <Button onClick={handleAddClick} variant="primary" className={styles.addBtn}>
-          <Plus size={18} />
-          <span>Добавить запись</span>
-        </Button>
+        <div className={styles.controls}>
+          <button
+            type="button"
+            className={styles.themeToggle}
+            onClick={toggleTheme}
+            aria-label="Переключить тему"
+          >
+            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
+          <Button onClick={handleAddClick} variant="primary" className={styles.addBtn}>
+            <Plus size={18} />
+            <span>Добавить запись</span>
+          </Button>
+        </div>
       </header>
 
       <section className={styles.metrics}>
