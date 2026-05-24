@@ -1,0 +1,88 @@
+import React from 'react';
+import { WorkLog } from '@/api/workLogsApi';
+import { WorkLogTableRow } from './WorkLogTableRow';
+import { Skeleton } from '@/components/Loader/Skeleton';
+import { Inbox } from 'lucide-react';
+import styles from './WorkLogTable.module.scss';
+
+interface WorkLogTableProps {
+  workLogs: WorkLog[];
+  onEdit: (log: WorkLog) => void;
+  onDelete: (id: string) => void;
+  isDeleting: boolean;
+  isLoading: boolean;
+}
+
+export const WorkLogTable: React.FC<WorkLogTableProps> = ({
+  workLogs,
+  onEdit,
+  onDelete,
+  isDeleting,
+  isLoading,
+}) => {
+  if (isLoading) {
+    return (
+      <div className={styles.tableWrapper}>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th>Дата</th>
+              <th>Вид работы</th>
+              <th>Объем</th>
+              <th>Исполнитель</th>
+              <th style={{ width: '90px' }}>Действия</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[1, 2, 3, 4].map((i) => (
+              <tr key={i} className={styles.row}>
+                <td><Skeleton width="90px" height="18px" /></td>
+                <td><Skeleton width="180px" height="18px" /></td>
+                <td><Skeleton width="60px" height="18px" /></td>
+                <td><Skeleton width="130px" height="18px" /></td>
+                <td><Skeleton width="60px" height="18px" /></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
+  if (workLogs.length === 0) {
+    return (
+      <div className={styles.emptyState}>
+        <Inbox size={48} className={styles.emptyIcon} />
+        <h3>Журнал работ пуст</h3>
+        <p>Не найдено ни одной записи. Измените параметры фильтрации или добавьте новую запись.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.tableWrapper}>
+      <table className={styles.table}>
+        <thead>
+          <tr>
+            <th>Дата</th>
+            <th>Вид работы</th>
+            <th>Объем</th>
+            <th>Исполнитель</th>
+            <th style={{ width: '90px' }}>Действия</th>
+          </tr>
+        </thead>
+        <tbody>
+          {workLogs.map((log) => (
+            <WorkLogTableRow
+              key={log.id}
+              log={log}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              isDeleting={isDeleting}
+            />
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};

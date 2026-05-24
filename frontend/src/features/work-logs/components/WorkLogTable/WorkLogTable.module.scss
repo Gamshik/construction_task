@@ -1,0 +1,158 @@
+@use '../../../../styles/variables' as *;
+@use '../../../../styles/mixins' as *;
+
+.tableWrapper {
+  @include glassmorphism;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  box-shadow: $shadow-md;
+  width: 100%;
+  margin-bottom: 24px;
+  border-color: hsla(210, 15%, 70%, 0.1);
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.92rem;
+
+  th {
+    background: hsla(220, 25%, 5%, 0.4);
+    padding: 16px 20px;
+    font-weight: 700;
+    color: $color-text-muted;
+    border-bottom: 1px solid $border-color;
+    font-family: $font-family;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+  }
+
+  td {
+    padding: 16px 20px;
+    border-bottom: 1px solid $border-color;
+    color: $color-text-main;
+    vertical-align: middle;
+  }
+}
+
+.row {
+  transition: $transition-smooth;
+
+  &:hover {
+    background: hsla(210, 15%, 70%, 0.02);
+  }
+
+  &:last-child td {
+    border-bottom: none;
+  }
+}
+
+.cellWithIcon {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+
+.iconMuted {
+  color: $color-text-darker;
+}
+
+.iconAccent {
+  color: $color-primary;
+}
+
+.bold {
+  font-weight: 600;
+}
+
+.unit {
+  font-size: 0.8rem;
+  color: $color-text-muted;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.editBtn, .deleteBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: $radius-md;
+  cursor: pointer;
+  transition: $transition-smooth;
+  border: 1px solid transparent;
+}
+
+.editBtn {
+  color: $color-text-muted;
+  background: hsla(210, 15%, 70%, 0.04);
+  border-color: $border-color;
+
+  &:hover {
+    color: $color-accent;
+    background: rgba(59, 130, 246, 0.08);
+    border-color: rgba(59, 130, 246, 0.2);
+  }
+}
+
+.deleteBtn {
+  color: $color-text-muted;
+  background: hsla(210, 15%, 70%, 0.04);
+  border-color: $border-color;
+
+  &:hover {
+    color: $color-error;
+    background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(239, 68, 68, 0.2);
+  }
+}
+
+// Fade out animation for smooth row deletion
+.fadeOut {
+  animation: fadeOutRow 0.28s ease-out forwards;
+}
+
+@keyframes fadeOutRow {
+  0% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: translateX(-16px) scale(0.97); height: 0; padding: 0; border: none; display: none; }
+}
+
+// Empty State
+.emptyState {
+  @include glassmorphism;
+  border-radius: $radius-lg;
+  padding: 48px 32px;
+  text-align: center;
+  max-width: 600px;
+  margin: 40px auto;
+  box-shadow: $shadow-md;
+  border-color: hsla(210, 15%, 70%, 0.1);
+
+  .emptyIcon {
+    color: $color-text-darker;
+    margin-bottom: 16px;
+  }
+
+  h3 {
+    font-family: $font-family;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: $color-text-main;
+  }
+
+  p {
+    font-size: 0.92rem;
+    color: $color-text-muted;
+    line-height: 1.5;
+  }
+}

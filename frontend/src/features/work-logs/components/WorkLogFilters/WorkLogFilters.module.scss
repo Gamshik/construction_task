@@ -1,0 +1,147 @@
+@use '../../../../styles/variables' as *;
+@use '../../../../styles/mixins' as *;
+
+.container {
+  @include glassmorphism;
+  padding: 16px 20px;
+  border-radius: $radius-lg;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: $shadow-sm;
+  flex-wrap: wrap;
+  width: 100%;
+  margin-bottom: 24px;
+  border-color: hsla(210, 15%, 70%, 0.1);
+
+  @include respond-to('md') {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+}
+
+.searchBox {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: hsla(220, 25%, 5%, 0.4);
+  border: 1px solid $border-color;
+  border-radius: $radius-md;
+  padding: 10px 14px;
+  gap: 10px;
+  transition: $transition-smooth;
+
+  &:focus-within {
+    border-color: $border-color-glow;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.1);
+  }
+
+  .icon {
+    color: $color-text-muted;
+  }
+
+  input {
+    width: 100%;
+    font-size: 0.9rem;
+    color: $color-text-main;
+
+    &::placeholder {
+      color: $color-text-darker;
+    }
+  }
+}
+
+.dateRange {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  @include respond-to('sm') {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.inputGroup {
+  display: flex;
+  align-items: center;
+  background: hsla(220, 25%, 5%, 0.4);
+  border: 1px solid $border-color;
+  border-radius: $radius-md;
+  padding: 10px 14px;
+  gap: 8px;
+  transition: $transition-smooth;
+
+  &:focus-within {
+    border-color: $border-color-glow;
+  }
+
+  .icon {
+    color: $color-text-muted;
+  }
+
+  input[type="date"] {
+    font-size: 0.9rem;
+    color: $color-text-main;
+    cursor: pointer;
+
+    &::-webkit-calendar-picker-indicator {
+      filter: invert(0.9);
+      cursor: pointer;
+    }
+  }
+}
+
+.divider {
+  color: $color-text-darker;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  @include respond-to('md') {
+    justify-content: space-between;
+  }
+}
+
+.sortBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: hsla(210, 15%, 70%, 0.04);
+  border: 1px solid $border-color;
+  padding: 10px 16px;
+  border-radius: $radius-md;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: $color-text-muted;
+  cursor: pointer;
+  transition: $transition-smooth;
+
+  &:hover {
+    color: $color-text-main;
+    background: hsla(210, 15%, 70%, 0.08);
+  }
+
+  &.asc {
+    color: $color-primary;
+    border-color: rgba(16, 185, 129, 0.2);
+  }
+}
+
+.clearBtn {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: $color-error;
+  cursor: pointer;
+  padding: 10px 16px;
+  border-radius: $radius-md;
+  transition: $transition-smooth;
+
+  &:hover {
+    background: rgba(239, 68, 68, 0.08);
+  }
+}
