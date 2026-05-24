@@ -188,14 +188,12 @@
 
 .success {
   color: #30d158; // Apple Green
-  border-color: rgba(48, 209, 88, 0.25);
-  background: rgba(48, 209, 88, 0.05); // Subtle green tint
+  border-color: rgba(48, 209, 88, 0.4);
 }
 
 .error {
   color: #ff453a; // Apple Red
-  border-color: rgba(255, 69, 58, 0.25);
-  background: rgba(255, 69, 58, 0.05); // Subtle red tint
+  border-color: rgba(255, 69, 58, 0.4);
 }
 
 @keyframes toastLife {
