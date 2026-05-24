@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, Search, ArrowUpDown } from 'lucide-react';
+import { Calendar, Search } from 'lucide-react';
 import styles from './WorkLogFilters.module.scss';
 
 interface WorkLogFiltersProps {
@@ -9,8 +9,6 @@ interface WorkLogFiltersProps {
   setEndDate: (val: string) => void;
   searchQuery: string;
   setSearchQuery: (val: string) => void;
-  sortOrder: 'asc' | 'desc';
-  setSortOrder: (val: 'asc' | 'desc') => void;
   clearFilters: () => void;
 }
 
@@ -21,8 +19,6 @@ export const WorkLogFilters: React.FC<WorkLogFiltersProps> = ({
   setEndDate,
   searchQuery,
   setSearchQuery,
-  sortOrder,
-  setSortOrder,
   clearFilters,
 }) => {
   const isFiltered = startDate || endDate || searchQuery;
@@ -47,6 +43,7 @@ export const WorkLogFilters: React.FC<WorkLogFiltersProps> = ({
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
             placeholder="С"
+            onClick={(e) => e.currentTarget.showPicker?.()}
           />
         </div>
         <span className={styles.divider}>—</span>
@@ -57,20 +54,12 @@ export const WorkLogFilters: React.FC<WorkLogFiltersProps> = ({
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
             placeholder="По"
+            onClick={(e) => e.currentTarget.showPicker?.()}
           />
         </div>
       </div>
 
       <div className={styles.actions}>
-        <button
-          className={`${styles.sortBtn} ${sortOrder === 'asc' ? styles.asc : ''}`}
-          onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-          title="Сортировать по дате"
-        >
-          <ArrowUpDown size={16} />
-          <span>{sortOrder === 'desc' ? 'Сначала новые' : 'Сначала старые'}</span>
-        </button>
-
         {isFiltered && (
           <button className={styles.clearBtn} onClick={clearFilters}>
             Сбросить

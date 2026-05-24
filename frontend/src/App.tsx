@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, HardHat, Info, CheckCircle, AlertCircle, BarChart3, Users, CalendarDays, Sun, Moon } from 'lucide-react';
+import { Plus, HardHat, CheckCircle, AlertCircle, BarChart3, Users, CalendarDays, Sun, Moon } from 'lucide-react';
 import {
   useWorkLogs,
   useWorkTypes,
@@ -198,8 +198,6 @@ function App() {
           setEndDate={setEndDate}
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
-          sortOrder={sortOrder}
-          setSortOrder={setSortOrder}
           clearFilters={clearFilters}
         />
 
@@ -209,6 +207,8 @@ function App() {
           onDelete={handleDelete}
           isDeleting={deleteMutation.isPending}
           isLoading={isLoadingLogs}
+          sortOrder={sortOrder}
+          setSortOrder={setSortOrder}
         />
       </main>
 
@@ -228,8 +228,7 @@ function App() {
 
       <footer className={styles.footer}>
         <div className={styles.footerInfo}>
-          <Info size={14} />
-          <span>Hexagonal Clean Architecture &bull; React + Vite &bull; NestJS + Prisma &bull; SCSS Modules</span>
+          <span>&copy; {new Date().getFullYear()} ООО «СтройКонтроль». Все права защищены. &bull; Система мониторинга строительных процессов</span>
         </div>
       </footer>
     </div>

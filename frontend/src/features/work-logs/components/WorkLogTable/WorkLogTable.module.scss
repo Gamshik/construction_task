@@ -154,3 +154,25 @@
     line-height: 1.5;
   }
 }
+
+.sortableHeader {
+  cursor: pointer;
+  user-select: none;
+  transition: $transition-smooth;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: $color-text-main !important;
+  }
+}
+
+.headerContent {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sortIcon {
+  color: $color-primary;
+  transition: $transition-smooth;
+}

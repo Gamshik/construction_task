@@ -2,7 +2,7 @@ import React from 'react';
 import { WorkLog } from '@/api/workLogsApi';
 import { WorkLogTableRow } from './WorkLogTableRow';
 import { Skeleton } from '@/components/Loader/Skeleton';
-import { Inbox } from 'lucide-react';
+import { Inbox, ArrowUp, ArrowDown } from 'lucide-react';
 import styles from './WorkLogTable.module.scss';
 
 interface WorkLogTableProps {
@@ -11,6 +11,8 @@ interface WorkLogTableProps {
   onDelete: (id: string) => void;
   isDeleting: boolean;
   isLoading: boolean;
+  sortOrder: 'asc' | 'desc';
+  setSortOrder: (val: 'asc' | 'desc') => void;
 }
 
 export const WorkLogTable: React.FC<WorkLogTableProps> = ({
@@ -19,14 +21,29 @@ export const WorkLogTable: React.FC<WorkLogTableProps> = ({
   onDelete,
   isDeleting,
   isLoading,
+  sortOrder,
+  setSortOrder,
 }) => {
+  const handleSortToggle = () => {
+    setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+  };
+
   if (isLoading) {
     return (
       <div className={styles.tableWrapper}>
         <table className={styles.table}>
           <thead>
             <tr>
-              <th>Дата</th>
+              <th onClick={handleSortToggle} className={styles.sortableHeader}>
+                <div className={styles.headerContent}>
+                  <span>Дата</span>
+                  {sortOrder === 'asc' ? (
+                    <ArrowUp size={12} className={styles.sortIcon} />
+                  ) : (
+                    <ArrowDown size={12} className={styles.sortIcon} />
+                  )}
+                </div>
+              </th>
               <th>Вид работы</th>
               <th>Объем</th>
               <th>Исполнитель</th>
@@ -64,7 +81,16 @@ export const WorkLogTable: React.FC<WorkLogTableProps> = ({
       <table className={styles.table}>
         <thead>
           <tr>
-            <th>Дата</th>
+            <th onClick={handleSortToggle} className={styles.sortableHeader}>
+              <div className={styles.headerContent}>
+                <span>Дата</span>
+                {sortOrder === 'asc' ? (
+                  <ArrowUp size={12} className={styles.sortIcon} />
+                ) : (
+                  <ArrowDown size={12} className={styles.sortIcon} />
+                )}
+              </div>
+            </th>
             <th>Вид работы</th>
             <th>Объем</th>
             <th>Исполнитель</th>
