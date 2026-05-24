@@ -65,6 +65,9 @@
 
   select {
     cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
 
     option {
       background: var(--surface-color);
