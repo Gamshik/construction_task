@@ -62,10 +62,9 @@ export const WorkLogTableRow: React.FC<WorkLogTableRowProps> = ({
         </div>
       </td>
       <td>
-        <div className={`${styles.actions} ${isConfirming ? styles.confirmingState : ''}`}>
+        <div className={styles.actions}>
           {isConfirming ? (
             <>
-              <span className={styles.confirmText}>Удалить?</span>
               <button
                 className={styles.confirmBtn}
                 onClick={handleDeleteConfirm}

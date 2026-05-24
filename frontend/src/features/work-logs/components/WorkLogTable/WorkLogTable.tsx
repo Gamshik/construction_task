@@ -47,7 +47,7 @@ export const WorkLogTable: React.FC<WorkLogTableProps> = ({
               <th>Вид работы</th>
               <th>Объем</th>
               <th>Исполнитель</th>
-              <th style={{ width: '115px' }}>Действия</th>
+              <th style={{ width: '90px' }}>Действия</th>
             </tr>
           </thead>
           <tbody>
@@ -94,7 +94,7 @@ export const WorkLogTable: React.FC<WorkLogTableProps> = ({
             <th>Вид работы</th>
             <th>Объем</th>
             <th>Исполнитель</th>
-            <th style={{ width: '115px' }}>Действия</th>
+            <th style={{ width: '90px' }}>Действия</th>
           </tr>
         </thead>
         <tbody>
