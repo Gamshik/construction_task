@@ -210,6 +210,10 @@
   -webkit-backdrop-filter: blur(20px);
   background: var(--surface-color);
   border: 1px solid $border-color;
+
+  svg {
+    flex-shrink: 0;
+  }
 }
 
 .success {
@@ -327,5 +331,14 @@
   .footerInfo {
     font-size: 0.7rem;
     line-height: 1.4;
+  }
+
+  .toast {
+    width: calc(100% - 32px);
+    max-width: 380px;
+    border-radius: $radius-lg;
+    font-size: 0.82rem;
+    padding: 12px 16px;
+    gap: 8px;
   }
 }
