@@ -100,6 +100,32 @@
   }
 }
 
+.statsToggle {
+  display: none; // Hidden on desktop
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: $radius-md;
+  border: 1px solid $border-color;
+  background: rgba(255, 255, 255, 0.03);
+  color: $color-text-muted;
+  cursor: pointer;
+  transition: $transition-smooth;
+
+  &:hover {
+    color: $color-text-main;
+    background: rgba(255, 255, 255, 0.06);
+    border-color: $border-color-hover;
+  }
+}
+
+.statsDrawerContent {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
 // Metrics section
 .metrics {
   display: grid;
@@ -267,6 +293,14 @@
     width: 100%;
     gap: 10px;
 
+    .statsToggle {
+      display: flex !important;
+      flex: 0 0 44px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+    }
+
     .themeToggle {
       flex: 0 0 44px;
       width: 44px;
@@ -282,16 +316,7 @@
   }
 
   .metrics {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-  }
-
-  .metricCard {
-    padding: 16px;
-
-    .metricValue {
-      font-size: 1.6rem;
-    }
+    display: none !important;
   }
 
   .footer {
@@ -302,11 +327,5 @@
   .footerInfo {
     font-size: 0.7rem;
     line-height: 1.4;
-  }
-}
-
-@media (max-width: 480px) {
-  .metrics {
-    grid-template-columns: 1fr;
   }
 }

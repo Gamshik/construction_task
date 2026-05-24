@@ -27,6 +27,7 @@ function App() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingLog, setEditingLog] = useState<WorkLog | null>(null);
+  const [isStatsOpen, setIsStatsOpen] = useState(false);
 
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     const saved = localStorage.getItem('theme');
@@ -169,6 +170,14 @@ function App() {
         <div className={styles.controls}>
           <button
             type="button"
+            className={styles.statsToggle}
+            onClick={() => setIsStatsOpen(true)}
+            aria-label="Показать статистику"
+          >
+            <BarChart3 size={18} />
+          </button>
+          <button
+            type="button"
             className={styles.themeToggle}
             onClick={toggleTheme}
             aria-label="Переключить тему"
@@ -245,6 +254,41 @@ function App() {
           isSubmitting={createMutation.isPending || updateMutation.isPending}
           onCancel={() => setIsModalOpen(false)}
         />
+      </Modal>
+
+      <Modal
+        isOpen={isStatsOpen}
+        onClose={() => setIsStatsOpen(false)}
+        title="Статистика журнала"
+      >
+        <div className={styles.statsDrawerContent}>
+          <div className={styles.metricCard}>
+            <div className={styles.metricHeader}>
+              <span className={styles.metricTitle}>Всего записей</span>
+              <BarChart3 className={styles.metricIconAccent} size={20} />
+            </div>
+            <span className={styles.metricValue}>{isLoadingLogs ? '...' : totalEntries}</span>
+            <span className={styles.metricDesc}>за все время</span>
+          </div>
+
+          <div className={styles.metricCard}>
+            <div className={styles.metricHeader}>
+              <span className={styles.metricTitle}>Исполнителей</span>
+              <Users className={styles.metricIconAccent} size={20} />
+            </div>
+            <span className={styles.metricValue}>{isLoadingLogs ? '...' : uniqueExecutors}</span>
+            <span className={styles.metricDesc}>активных бригадиров</span>
+          </div>
+
+          <div className={styles.metricCard}>
+            <div className={styles.metricHeader}>
+              <span className={styles.metricTitle}>За сегодня</span>
+              <CalendarDays className={styles.metricIconAccent} size={20} />
+            </div>
+            <span className={styles.metricValue}>{isLoadingLogs ? '...' : todayEntries}</span>
+            <span className={styles.metricDesc}>выполнено смен</span>
+          </div>
+        </div>
       </Modal>
 
       <footer className={styles.footer}>
