@@ -2,6 +2,44 @@
 @use 'mixins' as *;
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
 
+:root {
+  // Apple Dark Theme (Default)
+  --bg-color: #000000;
+  --bg-image: linear-gradient(180deg, #111112 0%, #000000 100%);
+  --surface-color: #1c1c1e;
+  --surface-hover: #2c2c2e;
+  --surface-glass: rgba(28, 28, 30, 0.75);
+  --text-main: #f5f5f7;
+  --text-muted: #86868b;
+  --text-darker: #424245;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-color-hover: rgba(255, 255, 255, 0.16);
+  --accent-color: #0071e3;
+  --accent-hover: #147ce5;
+  --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --skeleton-start: #1c1c1e;
+  --skeleton-end: #2c2c2e;
+}
+
+[data-theme="light"] {
+  // Apple Light Theme
+  --bg-color: #f5f5f7;
+  --bg-image: linear-gradient(180deg, #ffffff 0%, #f5f5f7 100%);
+  --surface-color: #ffffff;
+  --surface-hover: #eaeaea;
+  --surface-glass: rgba(255, 255, 255, 0.75);
+  --text-main: #1d1d1f;
+  --text-muted: #86868b;
+  --text-darker: #c1c1c7;
+  --border-color: rgba(0, 0, 0, 0.08);
+  --border-color-hover: rgba(0, 0, 0, 0.16);
+  --accent-color: #0071e3;
+  --accent-hover: #147ce5;
+  --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  --skeleton-start: #e5e5ea;
+  --skeleton-end: #d1d1d6;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -9,18 +47,16 @@
 }
 
 body {
-  background-color: $theme-dark-bg;
-  color: $color-text-main;
+  background-color: var(--bg-color);
+  color: var(--text-main);
   font-family: $font-family;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
   min-height: 100vh;
-  background-image: 
-    radial-gradient(at 0% 0%, hsla(150, 80%, 40%, 0.05) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, hsla(210, 100%, 55%, 0.05) 0px, transparent 50%),
-    radial-gradient(at 50% 100%, hsla(38, 95%, 55%, 0.03) 0px, transparent 50%);
+  background-image: var(--bg-image);
   background-attachment: fixed;
+  transition: background-color 0.3s ease, color 0.3s ease; // Smooth theme transitions
 }
 
 a {
@@ -43,15 +79,15 @@ button, input, select, textarea {
 }
 
 ::-webkit-scrollbar-track {
-  background: $theme-dark-bg;
+  background: var(--bg-color);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsla(210, 15%, 70%, 0.15);
+  background: var(--border-color-hover);
   border-radius: $radius-full;
-  border: 2px solid $theme-dark-bg;
+  border: 2px solid var(--bg-color);
 
   &:hover {
-    background: hsla(210, 15%, 70%, 0.3);
+    background: var(--text-muted);
   }
 }
