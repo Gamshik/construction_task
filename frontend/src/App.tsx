@@ -18,8 +18,8 @@ import { Button } from '@/components/Button/Button';
 import styles from './App.module.scss';
 
 function App() {
-  const { data: workLogs = [], isLoading: isLoadingLogs } = useWorkLogs();
-  const { data: workTypes = [] } = useWorkTypes();
+  const { data: workLogs = [], isLoading: isLoadingLogs, isError: isLogsError } = useWorkLogs();
+  const { data: workTypes = [], isError: isTypesError } = useWorkTypes();
 
   const createMutation = useCreateWorkLog();
   const updateMutation = useUpdateWorkLog();
@@ -76,6 +76,12 @@ function App() {
     };
   }, [toastTimeout]);
 
+  useEffect(() => {
+    if (isLogsError || isTypesError) {
+      showNotification('error', 'Сервер базы данных недоступен. Пожалуйста, проверьте подключение.');
+    }
+  }, [isLogsError, isTypesError]);
+
   const handleAddClick = () => {
     setEditingLog(null);
     setIsModalOpen(true);
@@ -101,7 +107,7 @@ function App() {
             setIsModalOpen(false);
           },
           onError: (err: any) => {
-            const msg = err.response?.data?.message || 'Ошибка обновления записи';
+            const msg = err.response?.data?.message || (err.request ? 'Сервер недоступен. Проверьте подключение.' : 'Ошибка обновления записи');
             showNotification('error', Array.isArray(msg) ? msg[0] : msg);
           },
         }
@@ -113,7 +119,7 @@ function App() {
           setIsModalOpen(false);
         },
         onError: (err: any) => {
-          const msg = err.response?.data?.message || 'Ошибка добавления записи';
+          const msg = err.response?.data?.message || (err.request ? 'Сервер недоступен. Проверьте подключение.' : 'Ошибка добавления записи');
           showNotification('error', Array.isArray(msg) ? msg[0] : msg);
         },
       });
@@ -125,8 +131,9 @@ function App() {
       onSuccess: () => {
         showNotification('success', 'Запись удалена из журнала');
       },
-      onError: () => {
-        showNotification('error', 'Ошибка удаления записи');
+      onError: (err: any) => {
+        const msg = err.response?.data?.message || (err.request ? 'Сервер недоступен. Проверьте подключение.' : 'Ошибка удаления записи');
+        showNotification('error', Array.isArray(msg) ? msg[0] : msg);
       },
     });
   };
