@@ -66,7 +66,7 @@ function App() {
     const id = setTimeout(() => {
       setNotification(null);
       setToastTimeout(null);
-    }, 2500);
+    }, 1800);
     setToastTimeout(id);
   };
 
