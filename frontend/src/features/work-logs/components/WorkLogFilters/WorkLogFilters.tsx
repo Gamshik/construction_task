@@ -41,7 +41,14 @@ export const WorkLogFilters: React.FC<WorkLogFiltersProps> = ({
           <input
             type="date"
             value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
+            max={endDate || undefined}
+            onChange={(e) => {
+              const val = e.target.value;
+              setStartDate(val);
+              if (val && endDate && new Date(val) > new Date(endDate)) {
+                setEndDate(val); // Auto-bump end date if start is later
+              }
+            }}
             placeholder="С"
             onClick={(e) => e.currentTarget.showPicker?.()}
           />
@@ -52,7 +59,14 @@ export const WorkLogFilters: React.FC<WorkLogFiltersProps> = ({
           <input
             type="date"
             value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
+            min={startDate || undefined}
+            onChange={(e) => {
+              const val = e.target.value;
+              setEndDate(val);
+              if (val && startDate && new Date(val) < new Date(startDate)) {
+                setStartDate(val); // Auto-bump start date if end is earlier
+              }
+            }}
             placeholder="По"
             onClick={(e) => e.currentTarget.showPicker?.()}
           />
