@@ -28,7 +28,7 @@ export const WorkLogForm: React.FC<WorkLogFormProps> = ({
   const [workTypeId, setWorkTypeId] = useState('');
   const [volume, setVolume] = useState<number | ''>('');
   const [executorName, setExecutorName] = useState('');
-  
+
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -77,7 +77,7 @@ export const WorkLogForm: React.FC<WorkLogFormProps> = ({
     const newErrors: Record<string, string> = {};
     if (!date) newErrors.date = 'Выберите дату выполнения';
     if (!workTypeId) newErrors.workTypeId = 'Выберите вид работы';
-    
+
     if (volume === '') {
       newErrors.volume = 'Укажите объем выполненных работ';
     } else if (Number(volume) <= 0) {
