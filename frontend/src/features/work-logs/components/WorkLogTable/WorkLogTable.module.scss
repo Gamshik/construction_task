@@ -176,3 +176,105 @@
   color: $color-primary;
   transition: $transition-smooth;
 }
+
+@include respond-to('md') {
+  .tableWrapper {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    overflow: visible;
+  }
+
+  .table {
+    display: block;
+    width: 100%;
+
+    thead {
+      display: none; // Hide headings on mobile
+    }
+
+    tbody {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      width: 100%;
+    }
+
+    tr.row {
+      display: flex;
+      flex-direction: column;
+      background: var(--surface-color);
+      border: 1px solid $border-color;
+      border-radius: $radius-lg;
+      padding: 16px;
+      gap: 12px;
+      box-shadow: $shadow-sm;
+      position: relative;
+      transition: $transition-smooth;
+
+      &:hover {
+        border-color: $border-color-hover;
+      }
+
+      td {
+        display: block;
+        padding: 0;
+        border: none;
+        width: 100% !important;
+
+        // Date row with Actions container
+        &:nth-child(1) {
+          order: 1;
+          display: flex;
+          align-items: center;
+          border-bottom: 1px solid $border-color;
+          padding-bottom: 10px;
+          margin-bottom: 2px;
+          padding-right: 80px; // Make space for absolute positioned actions
+        }
+
+        // Work Type title
+        &:nth-child(2) {
+          order: 2;
+          font-size: 1rem;
+          .bold {
+            font-size: 1.05rem;
+            color: var(--text-main);
+          }
+        }
+
+        // Volume Badge (Apple Capsule Pill Badge Style)
+        &:nth-child(3) {
+          order: 3;
+          display: inline-flex;
+          background: rgba(0, 113, 227, 0.08);
+          border: 1px solid rgba(0, 113, 227, 0.15);
+          padding: 4px 10px;
+          border-radius: $radius-sm;
+          width: fit-content !important;
+          margin-top: 4px;
+        }
+
+        // Executor
+        &:nth-child(4) {
+          order: 4;
+          display: flex;
+          align-items: center;
+          margin-top: 4px;
+          border-top: 1px dashed $border-color;
+          padding-top: 10px;
+        }
+
+        // Action Buttons: Absolute positioned in the upper right
+        &:nth-child(5) {
+          order: 1;
+          position: absolute;
+          top: 14px;
+          right: 16px;
+          width: auto !important;
+          z-index: 10;
+        }
+      }
+    }
+  }
+}
