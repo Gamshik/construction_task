@@ -3,9 +3,9 @@
 .skeleton {
   background: linear-gradient(
     90deg,
-    hsla(210, 15%, 70%, 0.05) 25%,
-    hsla(210, 15%, 70%, 0.12) 37%,
-    hsla(210, 15%, 70%, 0.05) 63%
+    var(--skeleton-start) 25%,
+    var(--skeleton-end) 37%,
+    var(--skeleton-start) 63%
   );
   background-size: 400% 100%;
   animation: shimmer 1.4s ease infinite;
