@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronDown } from 'lucide-react';
 import { WorkLog, WorkType } from '@/api/workLogsApi';
 import { Button } from '@/components/Button/Button';
 import styles from './WorkLogForm.module.scss';
@@ -109,22 +108,19 @@ export const WorkLogForm: React.FC<WorkLogFormProps> = ({
 
       <div className={styles.formGroup}>
         <label htmlFor="workType">Вид работы</label>
-        <div className={styles.selectWrapper}>
-          <select
-            id="workType"
-            value={workTypeId}
-            onChange={(e) => setWorkTypeId(e.target.value)}
-            className={errors.workTypeId ? styles.inputError : ''}
-          >
-            <option value="">-- Выберите вид работы --</option>
-            {workTypes.map((wt) => (
-              <option key={wt.id} value={wt.id}>
-                {wt.title}
-              </option>
-            ))}
-          </select>
-          <ChevronDown className={styles.selectArrow} size={16} />
-        </div>
+        <select
+          id="workType"
+          value={workTypeId}
+          onChange={(e) => setWorkTypeId(e.target.value)}
+          className={errors.workTypeId ? styles.inputError : ''}
+        >
+          <option value="">-- Выберите вид работы --</option>
+          {workTypes.map((wt) => (
+            <option key={wt.id} value={wt.id}>
+              {wt.title}
+            </option>
+          ))}
+        </select>
         {errors.workTypeId && (
           <span className={styles.errorText}>{errors.workTypeId}</span>
         )}

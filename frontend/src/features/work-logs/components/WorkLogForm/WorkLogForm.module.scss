@@ -65,34 +65,12 @@
 
   select {
     cursor: pointer;
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    padding-right: 40px;
 
     option {
       background: var(--surface-color);
       color: var(--text-main);
     }
   }
-}
-
-.selectWrapper {
-  position: relative;
-  width: 100%;
-}
-
-.selectArrow {
-  position: absolute;
-  right: 14px;
-  top: 0;
-  height: 100%;
-  pointer-events: none;
-  transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1), color 0.2s ease;
-  color: $color-text-muted;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 
