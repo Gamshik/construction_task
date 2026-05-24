@@ -1,0 +1,30 @@
+@use '../../styles/variables' as *;
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    hsla(210, 15%, 70%, 0.05) 25%,
+    hsla(210, 15%, 70%, 0.12) 37%,
+    hsla(210, 15%, 70%, 0.05) 63%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease infinite;
+}
+
+.text {
+  border-radius: $radius-sm;
+  height: 12px;
+}
+
+.rect {
+  border-radius: $radius-md;
+}
+
+.circle {
+  border-radius: $radius-full;
+}
+
+@keyframes shimmer {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
