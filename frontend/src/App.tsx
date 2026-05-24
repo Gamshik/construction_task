@@ -78,7 +78,7 @@ function App() {
 
   useEffect(() => {
     if (isLogsError || isTypesError) {
-      showNotification('error', 'Сервер базы данных недоступен. Пожалуйста, проверьте подключение.');
+      showNotification('error', 'Не удалось загрузить данные. Проверьте интернет-соединение.');
     }
   }, [isLogsError, isTypesError]);
 
@@ -107,7 +107,7 @@ function App() {
             setIsModalOpen(false);
           },
           onError: (err: any) => {
-            const msg = err.response?.data?.message || (err.request ? 'Сервер недоступен. Проверьте подключение.' : 'Ошибка обновления записи');
+            const msg = err.response?.data?.message || (err.request ? 'Не удалось сохранить изменения. Проверьте интернет-соединение.' : 'Ошибка обновления записи');
             showNotification('error', Array.isArray(msg) ? msg[0] : msg);
           },
         }
@@ -119,7 +119,7 @@ function App() {
           setIsModalOpen(false);
         },
         onError: (err: any) => {
-          const msg = err.response?.data?.message || (err.request ? 'Сервер недоступен. Проверьте подключение.' : 'Ошибка добавления записи');
+          const msg = err.response?.data?.message || (err.request ? 'Не удалось добавить запись. Проверьте интернет-соединение.' : 'Ошибка добавления записи');
           showNotification('error', Array.isArray(msg) ? msg[0] : msg);
         },
       });
@@ -132,7 +132,7 @@ function App() {
         showNotification('success', 'Запись удалена из журнала');
       },
       onError: (err: any) => {
-        const msg = err.response?.data?.message || (err.request ? 'Сервер недоступен. Проверьте подключение.' : 'Ошибка удаления записи');
+        const msg = err.response?.data?.message || (err.request ? 'Не удалось удалить запись. Проверьте интернет-соединение.' : 'Ошибка удаления записи');
         showNotification('error', Array.isArray(msg) ? msg[0] : msg);
       },
     });
