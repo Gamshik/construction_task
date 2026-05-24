@@ -1,0 +1,57 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: $theme-dark-bg;
+  color: $color-text-main;
+  font-family: $font-family;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  min-height: 100vh;
+  background-image: 
+    radial-gradient(at 0% 0%, hsla(150, 80%, 40%, 0.05) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, hsla(210, 100%, 55%, 0.05) 0px, transparent 50%),
+    radial-gradient(at 50% 100%, hsla(38, 95%, 55%, 0.03) 0px, transparent 50%);
+  background-attachment: fixed;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  outline: none;
+}
+
+// Global Scrollbar
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: $theme-dark-bg;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsla(210, 15%, 70%, 0.15);
+  border-radius: $radius-full;
+  border: 2px solid $theme-dark-bg;
+
+  &:hover {
+    background: hsla(210, 15%, 70%, 0.3);
+  }
+}
