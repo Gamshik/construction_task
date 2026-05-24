@@ -14,8 +14,8 @@
   position: relative;
 
   label {
-    font-size: 0.85rem;
-    font-weight: 600;
+    font-size: 0.82rem;
+    font-weight: 500;
     color: $color-text-muted;
   }
 
@@ -24,11 +24,11 @@
   input[type="number"],
   select {
     width: 100%;
-    background: hsla(220, 25%, 5%, 0.4);
+    background: rgba(255, 255, 255, 0.03);
     border: 1px solid $border-color;
-    border-radius: $radius-md;
-    padding: 12px 16px;
-    font-size: 0.92rem;
+    border-radius: $radius-md; // Apple 8px
+    padding: 10px 14px;
+    font-size: 0.88rem;
     color: $color-text-main;
     transition: $transition-smooth;
 
@@ -38,11 +38,11 @@
 
     &:focus {
       border-color: $border-color-glow;
-      box-shadow: 0 0 10px rgba(16, 185, 129, 0.1);
+      background: rgba(255, 255, 255, 0.05);
     }
 
     &::-webkit-calendar-picker-indicator {
-      filter: invert(0.9);
+      filter: invert(0.5);
       cursor: pointer;
     }
   }
@@ -57,8 +57,8 @@
     padding-right: 40px;
 
     option {
-      background: $theme-dark-surface;
-      color: $color-text-main;
+      background: var(--surface-color);
+      color: var(--text-main);
     }
   }
 }
@@ -77,22 +77,21 @@
 .unitBadge {
   position: absolute;
   right: 14px;
-  background: hsla(150, 80%, 40%, 0.15);
+  background: rgba(0, 113, 227, 0.08);
   color: $color-primary;
-  border: 1px solid rgba(16, 185, 129, 0.2);
-  padding: 3px 8px;
-  font-size: 0.8rem;
-  font-weight: 700;
+  border: 1px solid rgba(0, 113, 227, 0.15);
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
   border-radius: $radius-sm;
   pointer-events: none;
 }
 
 .inputError {
-  border-color: rgba(239, 68, 68, 0.4) !important;
+  border-color: rgba(255, 69, 58, 0.4) !important;
 
   &:focus {
     border-color: $color-error !important;
-    box-shadow: 0 0 10px rgba(239, 68, 68, 0.15) !important;
   }
 }
 
