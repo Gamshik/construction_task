@@ -91,3 +91,14 @@ button, input, select, textarea {
     background: var(--text-muted);
   }
 }
+
+// Hide standard spin buttons (arrows) for numeric inputs
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
