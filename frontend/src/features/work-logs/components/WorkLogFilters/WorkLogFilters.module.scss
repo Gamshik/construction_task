@@ -88,8 +88,8 @@
     cursor: pointer;
 
     &::-webkit-calendar-picker-indicator {
-      filter: invert(0.5); // Adapt for both dark/light
-      cursor: pointer;
+      display: none;
+      -webkit-appearance: none;
     }
   }
 }

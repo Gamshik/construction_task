@@ -98,6 +98,7 @@ export const WorkLogForm: React.FC<WorkLogFormProps> = ({
           value={date}
           onChange={(e) => setDate(e.target.value)}
           className={errors.date ? styles.inputError : ''}
+          onClick={(e) => e.currentTarget.showPicker?.()}
         />
         {errors.date && <span className={styles.errorText}>{errors.date}</span>}
       </div>

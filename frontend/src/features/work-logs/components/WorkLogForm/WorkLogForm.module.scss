@@ -47,6 +47,22 @@
     }
   }
 
+  input[type="date"] {
+    position: relative;
+    padding-left: 36px !important;
+
+    &::-webkit-calendar-picker-indicator {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      margin: 0;
+      padding: 0;
+      filter: invert(0.5);
+      cursor: pointer;
+    }
+  }
+
   select {
     cursor: pointer;
     appearance: none;
