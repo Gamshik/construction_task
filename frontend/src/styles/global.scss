@@ -7,7 +7,7 @@ html {
 }
 
 :root {
-  // Apple Dark Theme (Default)
+  // Темная тема Apple (по умолчанию)
   --bg-color: #000000;
   --bg-image: linear-gradient(180deg, #111112 0%, #000000 100%);
   --surface-color: #1c1c1e;
@@ -26,7 +26,7 @@ html {
 }
 
 [data-theme="light"] {
-  // Apple Light Theme
+  // Светлая тема Apple
   --bg-color: #f5f5f7;
   --bg-image: linear-gradient(180deg, #ffffff 0%, #f5f5f7 100%);
   --surface-color: #ffffff;
@@ -48,7 +48,7 @@ html {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent; // Disable default blue tap highlight on mobile
+  -webkit-tap-highlight-color: transparent; // Отключаем дефолтную синюю подсветку тапа на мобильных устройствах
 }
 
 body {
@@ -61,9 +61,9 @@ body {
   min-height: 100vh;
   background-image: var(--bg-image);
   background-attachment: fixed;
-  transition: background-color 0.3s ease, color 0.3s ease; // Smooth theme transitions
+  transition: background-color 0.3s ease, color 0.3s ease; // Плавный переход при смене темы
 
-  // Prevent accidental text selection globally for native-like feel
+  // Предотвращаем случайное выделение текста глобально для ощущения нативного приложения
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -83,7 +83,7 @@ button, input, select, textarea {
   outline: none;
 }
 
-// Allow text selection in inputs so typing and editing works perfectly
+// Разрешаем выделение текста в полях ввода, чтобы редактирование работало корректно
 input, select, textarea {
   user-select: text;
   -webkit-user-select: text;
@@ -91,7 +91,7 @@ input, select, textarea {
   -ms-user-select: text;
 }
 
-// Global Scrollbar
+// Глобальный скроллбар
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -111,7 +111,7 @@ input, select, textarea {
   }
 }
 
-// Hide standard spin buttons (arrows) for numeric inputs
+// Скрываем стандартные стрелки управления значением для числовых полей ввода
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
   -webkit-appearance: none;
@@ -122,7 +122,7 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
-// Prevent iOS Safari auto-zooming on focus by forcing at least 16px font-size on mobile
+// Предотвращаем авто-масштабирование в iOS Safari при фокусе, принудительно задавая размер шрифта не менее 16px
 @include respond-to('md') {
   input, select, textarea {
     font-size: 16px !important;
