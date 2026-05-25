@@ -5,8 +5,8 @@
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
+  right: 0;
+  bottom: 0;
   background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -104,6 +104,9 @@
     border-left: none;
     border-right: none;
     border-bottom: none;
+    max-height: 85dvh; // Limit height dynamically so it adjusts when keyboard opens
+    display: flex;
+    flex-direction: column;
     animation: slideUpDrawer 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 
     &.closing {
@@ -120,6 +123,9 @@
 
   .body {
     padding: 16px 16px 32px 16px;
+    overflow-y: auto; // Allow internal scrolling within the modal body
+    -webkit-overflow-scrolling: touch; // Premium elastic scrolling on iOS Safari
+    flex: 1; // Stretch to fill remaining height
   }
 }
 

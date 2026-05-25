@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Check } from 'lucide-react';
 import { WorkLog, WorkType } from '@/api/workLogsApi';
 import { Button } from '@/components/Button/Button';
 import styles from './WorkLogForm.module.scss';
@@ -13,6 +14,7 @@ interface WorkLogFormProps {
     executorName: string;
   }) => void;
   isSubmitting: boolean;
+  isSuccess?: boolean;
   onCancel: () => void;
 }
 
@@ -21,6 +23,7 @@ export const WorkLogForm: React.FC<WorkLogFormProps> = ({
   initialData,
   onSubmit,
   isSubmitting,
+  isSuccess = false,
   onCancel,
 }) => {
   const [date, setDate] = useState('');
@@ -168,12 +171,24 @@ export const WorkLogForm: React.FC<WorkLogFormProps> = ({
           type="button"
           variant="secondary"
           onClick={onCancel}
-          disabled={isSubmitting}
+          disabled={isSubmitting || isSuccess}
         >
           Отмена
         </Button>
-        <Button type="submit" variant="primary" isLoading={isSubmitting}>
-          {initialData ? 'Сохранить изменения' : 'Добавить запись'}
+        <Button
+          type="submit"
+          variant="primary"
+          isLoading={isSubmitting && !isSuccess}
+          className={`${styles.submitBtn} ${isSuccess ? styles.success : ''}`}
+          disabled={isSubmitting || isSuccess}
+        >
+          {isSuccess ? (
+            <Check size={18} className={styles.checkIcon} />
+          ) : (
+            <span className={styles.btnText}>
+              {initialData ? 'Сохранить' : 'Записать работу'}
+            </span>
+          )}
         </Button>
       </div>
     </form>
