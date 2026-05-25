@@ -105,7 +105,7 @@ function App() {
 
     const timer = setTimeout(() => {
       setShowMetricsLoader(true);
-    }, 200); // 200ms delay to prevent metrics flickering on extremely fast queries
+    }, 200);
 
     return () => clearTimeout(timer);
   }, [isLoadingLogs]);
@@ -219,14 +219,14 @@ function App() {
       if (editingLog) {
         const logId = editingLog.id;
         const updatedLog = await updateMutation.mutateAsync({ id: logId, ...formData });
-        
+
         setIsFormSuccess(true);
-        
+
         // Wait 600ms for the modal success checkmark animation to display
         setTimeout(() => {
           setIsModalOpen(false);
           setIsFormSuccess(false);
-          
+
           // Once the modal close animation starts, trigger highlight and toast notification
           setTimeout(() => {
             setUpdatedLogId(updatedLog.id);
@@ -235,14 +235,14 @@ function App() {
         }, 600);
       } else {
         const newLog = await createMutation.mutateAsync(formData);
-        
+
         setIsFormSuccess(true);
-        
+
         // Wait 600ms for the modal success checkmark animation to display
         setTimeout(() => {
           setIsModalOpen(false);
           setIsFormSuccess(false);
-          
+
           // Once the modal close animation starts, trigger highlight and toast notification
           setTimeout(() => {
             setNewLogId(newLog.id);
@@ -322,7 +322,7 @@ function App() {
             <span className={styles.metricTitle}>Всего записей</span>
             <BarChart3 className={styles.metricIconAccent} size={20} />
           </div>
-          <span className={styles.metricValue}>{showMetricsLoader ? '...' : totalEntries}</span>
+          <span className={styles.metricValue}>{showMetricsLoader ? 0 : totalEntries}</span>
           <span className={styles.metricDesc}>за все время</span>
         </div>
 
@@ -331,7 +331,7 @@ function App() {
             <span className={styles.metricTitle}>Исполнителей</span>
             <Users className={styles.metricIconAccent} size={20} />
           </div>
-          <span className={styles.metricValue}>{showMetricsLoader ? '...' : uniqueExecutors}</span>
+          <span className={styles.metricValue}>{showMetricsLoader ? 0 : uniqueExecutors}</span>
           <span className={styles.metricDesc}>активных бригадиров</span>
         </div>
 
@@ -340,7 +340,7 @@ function App() {
             <span className={styles.metricTitle}>За сегодня</span>
             <CalendarDays className={styles.metricIconAccent} size={20} />
           </div>
-          <span className={styles.metricValue}>{showMetricsLoader ? '...' : todayEntries}</span>
+          <span className={styles.metricValue}>{showMetricsLoader ? 0 : todayEntries}</span>
           <span className={styles.metricDesc}>выполнено смен</span>
         </div>
       </section>
@@ -413,7 +413,7 @@ function App() {
               <span className={styles.metricTitle}>Всего записей</span>
               <BarChart3 className={styles.metricIconAccent} size={20} />
             </div>
-            <span className={styles.metricValue}>{showMetricsLoader ? '...' : totalEntries}</span>
+            <span className={styles.metricValue}>{showMetricsLoader ? 0 : totalEntries}</span>
             <span className={styles.metricDesc}>за все время</span>
           </div>
 
@@ -422,7 +422,7 @@ function App() {
               <span className={styles.metricTitle}>Исполнителей</span>
               <Users className={styles.metricIconAccent} size={20} />
             </div>
-            <span className={styles.metricValue}>{showMetricsLoader ? '...' : uniqueExecutors}</span>
+            <span className={styles.metricValue}>{showMetricsLoader ? 0 : uniqueExecutors}</span>
             <span className={styles.metricDesc}>активных бригадиров</span>
           </div>
 
@@ -431,7 +431,7 @@ function App() {
               <span className={styles.metricTitle}>За сегодня</span>
               <CalendarDays className={styles.metricIconAccent} size={20} />
             </div>
-            <span className={styles.metricValue}>{showMetricsLoader ? '...' : todayEntries}</span>
+            <span className={styles.metricValue}>{showMetricsLoader ? 0 : todayEntries}</span>
             <span className={styles.metricDesc}>выполнено смен</span>
           </div>
         </div>

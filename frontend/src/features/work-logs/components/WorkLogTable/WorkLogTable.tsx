@@ -85,6 +85,17 @@ export const WorkLogTable: React.FC<WorkLogTableProps> = ({
   const isRefetchingEmpty = workLogs.length === 0 && isFetching && !wasEmptyRef.current;
   const isSkeletonActive = (showSkeleton || isRefetchingEmpty) && !wasEmptyRef.current;
 
+  console.log('WorkLogTable debug:', {
+    workLogsCount: workLogs.length,
+    isLoading,
+    isFetching,
+    showSkeleton,
+    isRefetchingEmpty,
+    wasEmpty: wasEmptyRef.current,
+    isSkeletonActive,
+    totalLogsCount
+  });
+
   // Render empty state ONLY when fully loaded and there are indeed no records
   if (workLogs.length === 0 && !isSkeletonActive) {
     const isFetchingEmpty = isFetching;
