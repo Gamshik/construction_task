@@ -87,11 +87,26 @@ export const WorkLogTable: React.FC<WorkLogTableProps> = ({
 
   // Render empty state ONLY when fully loaded and there are indeed no records
   if (workLogs.length === 0 && !isSkeletonActive) {
+    const isFetchingEmpty = isFetching;
     return (
-      <div className={styles.emptyState}>
+      <div className={`${styles.emptyState} ${isFetchingEmpty ? styles.loadingEmpty : ''}`}>
         <Inbox size={48} className={styles.emptyIcon} />
         <h3>Журнал работ пуст</h3>
         <p>Не найдено ни одной записи. Измените параметры фильтрации или добавьте новую запись.</p>
+        {isFetchingEmpty && (
+          <div className={styles.liquidCurrent}>
+            <svg>
+              <defs>
+                <linearGradient id="currentGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="var(--accent-color)" />
+                  <stop offset="50%" stop-color="rgba(0, 113, 227, 0.4)" />
+                  <stop offset="100%" stop-color="transparent" />
+                </linearGradient>
+              </defs>
+              <rect pathLength="1000" />
+            </svg>
+          </div>
+        )}
       </div>
     );
   }

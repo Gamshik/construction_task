@@ -272,11 +272,24 @@
   margin: 40px auto;
   box-shadow: $shadow-sm;
   background: var(--surface-color);
+  position: relative;
+  transition: border-color 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+
+  &.loadingEmpty {
+    border-color: transparent;
+  }
 
   .emptyIcon {
     color: $color-text-muted;
     opacity: 0.5;
     margin-bottom: 16px;
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+
+  &.loadingEmpty .emptyIcon {
+    color: var(--accent-color);
+    opacity: 0.8;
+    filter: drop-shadow(0 0 8px rgba(0, 113, 227, 0.25));
   }
 
   h3 {
@@ -292,6 +305,42 @@
     color: $color-text-muted;
     line-height: 1.5;
   }
+}
+
+.liquidCurrent {
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  bottom: -1px;
+  pointer-events: none;
+  z-index: 3;
+
+  svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  rect {
+    width: calc(100% + 2px);
+    height: calc(100% + 2px);
+    x: -1px;
+    y: -1px;
+    rx: $radius-lg;
+    ry: $radius-lg;
+    fill: none;
+    stroke: url(#currentGradient);
+    stroke-width: 1.5px;
+    stroke-dasharray: 150 850;
+    filter: drop-shadow(0 0 3px rgba(0, 113, 227, 0.35)) drop-shadow(0 0 1px rgba(0, 113, 227, 0.2));
+    animation: currentRun 3s linear infinite;
+  }
+}
+
+@keyframes currentRun {
+  0% { stroke-dashoffset: 1000; }
+  100% { stroke-dashoffset: 0; }
 }
 
 .sortableHeader {
