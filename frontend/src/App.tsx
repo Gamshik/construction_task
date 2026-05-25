@@ -28,6 +28,8 @@ function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingLog, setEditingLog] = useState<WorkLog | null>(null);
   const [isStatsOpen, setIsStatsOpen] = useState(false);
+  const [isFormSuccess, setIsFormSuccess] = useState(false);
+  const [newLogId, setNewLogId] = useState<string | null>(null);
 
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     const saved = localStorage.getItem('theme');
@@ -84,11 +86,13 @@ function App() {
   }, [isLogsError, isTypesError]);
 
   const handleAddClick = () => {
+    setIsFormSuccess(false);
     setEditingLog(null);
     setIsModalOpen(true);
   };
 
   const handleEditClick = (log: WorkLog) => {
+    setIsFormSuccess(false);
     setEditingLog(log);
     setIsModalOpen(true);
   };
@@ -104,8 +108,12 @@ function App() {
         { id: editingLog.id, ...formData },
         {
           onSuccess: () => {
-            showNotification('success', 'Запись успешно обновлена');
-            setIsModalOpen(false);
+            setIsFormSuccess(true);
+            setTimeout(() => {
+              setIsModalOpen(false);
+              setIsFormSuccess(false);
+              showNotification('success', 'Запись успешно обновлена');
+            }, 600);
           },
           onError: (err: any) => {
             const msg = err.response?.data?.message || (err.request ? 'Не удалось сохранить изменения. Проверьте интернет-соединение.' : 'Ошибка обновления записи');
@@ -115,9 +123,21 @@ function App() {
       );
     } else {
       createMutation.mutate(formData, {
-        onSuccess: () => {
-          showNotification('success', 'Запись успешно добавлена в журнал');
-          setIsModalOpen(false);
+        onSuccess: (newLog) => {
+          setIsFormSuccess(true);
+          setTimeout(() => {
+            setIsModalOpen(false);
+            setIsFormSuccess(false);
+
+            // Trigger the row slide-down animation ONLY after the modal is closed!
+            setNewLogId(newLog.id);
+            showNotification('success', 'Запись успешно добавлена в журнал');
+
+            // Remove green animation highlight after 3.5s
+            setTimeout(() => {
+              setNewLogId(null);
+            }, 3500);
+          }, 600);
         },
         onError: (err: any) => {
           const msg = err.response?.data?.message || (err.request ? 'Не удалось добавить запись. Проверьте интернет-соединение.' : 'Ошибка добавления записи');
@@ -184,10 +204,6 @@ function App() {
           >
             {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
           </button>
-          <Button onClick={handleAddClick} variant="primary" className={styles.addBtn}>
-            <Plus size={18} />
-            <span>Добавить запись</span>
-          </Button>
         </div>
       </header>
 
@@ -221,6 +237,17 @@ function App() {
       </section>
 
       <main className={styles.mainContent}>
+        <div className={styles.sectionHeader}>
+          <div className={styles.sectionTitle}>
+            <h2>Выполненные работы</h2>
+            <p className={styles.sectionSubtitle}>Список всех записанных смен и выполненных задач</p>
+          </div>
+          <Button onClick={handleAddClick} variant="primary" className={styles.addBtn}>
+            <Plus size={18} />
+            <span>Записать работу</span>
+          </Button>
+        </div>
+
         <WorkLogFilters
           startDate={startDate}
           setStartDate={setStartDate}
@@ -239,19 +266,21 @@ function App() {
           isLoading={isLoadingLogs}
           sortOrder={sortOrder}
           setSortOrder={setSortOrder}
+          newLogId={newLogId}
         />
       </main>
 
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editingLog ? 'Редактировать запись' : 'Добавить запись в журнал'}
+        title={editingLog ? 'Изменить запись' : 'Внести выполненную работу'}
       >
         <WorkLogForm
           workTypes={workTypes}
           initialData={editingLog}
           onSubmit={handleFormSubmit}
           isSubmitting={createMutation.isPending || updateMutation.isPending}
+          isSuccess={isFormSuccess}
           onCancel={() => setIsModalOpen(false)}
         />
       </Modal>

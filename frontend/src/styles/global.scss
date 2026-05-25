@@ -44,6 +44,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent; // Disable default blue tap highlight on mobile
 }
 
 body {
@@ -57,6 +58,12 @@ body {
   background-image: var(--bg-image);
   background-attachment: fixed;
   transition: background-color 0.3s ease, color 0.3s ease; // Smooth theme transitions
+
+  // Prevent accidental text selection globally for native-like feel
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 a {
@@ -70,6 +77,14 @@ button, input, select, textarea {
   background: none;
   border: none;
   outline: none;
+}
+
+// Allow text selection in inputs so typing and editing works perfectly
+input, select, textarea {
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
 }
 
 // Global Scrollbar
@@ -101,4 +116,11 @@ input::-webkit-inner-spin-button {
 
 input[type="number"] {
   -moz-appearance: textfield;
+}
+
+// Prevent iOS Safari auto-zooming on focus by forcing at least 16px font-size on mobile
+@include respond-to('md') {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
 }
