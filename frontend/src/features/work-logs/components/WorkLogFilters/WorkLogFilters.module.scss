@@ -14,7 +14,16 @@
   margin-bottom: 24px;
   background: var(--surface-color);
   position: relative;
-  transition: $transition-smooth;
+  
+  // Safe, specific transitions instead of 'all' to prevent WebKit rendering bugs
+  transition: border-color 0.25s cubic-bezier(0.25, 1, 0.5, 1),
+              box-shadow 0.25s cubic-bezier(0.25, 1, 0.5, 1),
+              background 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+
+  // Force hardware acceleration layer to prevent iOS caret offset jumping when .active is added
+  transform: translate3d(0, 0, 0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 
   &.active {
     border-color: rgba(255, 255, 255, 0.16);
@@ -46,7 +55,15 @@
   border-radius: $radius-md;
   padding: 8px 12px;
   gap: 10px;
-  transition: $transition-smooth;
+  
+  // Safe, specific transitions
+  transition: border-color 0.25s cubic-bezier(0.25, 1, 0.5, 1),
+              background 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+
+  // Force hardware acceleration layer
+  transform: translate3d(0, 0, 0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 
   &:focus-within {
     border-color: $border-color-glow;
@@ -61,6 +78,11 @@
     width: 100%;
     font-size: 0.88rem;
     color: $color-text-main;
+    
+    // Force hardware acceleration layer on input
+    transform: translate3d(0, 0, 0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
 
     &::placeholder {
       color: $color-text-darker;
@@ -87,7 +109,15 @@
   border-radius: $radius-md;
   padding: 8px 12px;
   gap: 8px;
-  transition: $transition-smooth;
+  
+  // Safe, specific transitions
+  transition: border-color 0.25s cubic-bezier(0.25, 1, 0.5, 1),
+              background 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+
+  // Force hardware acceleration layer
+  transform: translate3d(0, 0, 0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 
   &:focus-within {
     border-color: $border-color-glow;
@@ -102,6 +132,11 @@
     font-size: 0.88rem;
     color: $color-text-main;
     cursor: pointer;
+    
+    // Force hardware acceleration layer on input
+    transform: translate3d(0, 0, 0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
 
     &::-webkit-calendar-picker-indicator {
       display: none;
