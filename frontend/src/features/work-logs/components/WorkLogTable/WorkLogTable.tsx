@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { WorkLog } from '@/api/workLogsApi';
 import { WorkLogTableRow } from './WorkLogTableRow';
 import { Skeleton } from '@/components/Loader/Skeleton';
@@ -43,6 +43,19 @@ export const WorkLogTable: React.FC<WorkLogTableProps> = ({
   totalLogsCount,
 }) => {
   const [showSkeleton, setShowSkeleton] = useState(false);
+  const prevCountRef = useRef(limit);
+
+  // Keep track of page limit changes
+  useEffect(() => {
+    prevCountRef.current = limit;
+  }, [limit]);
+
+  // Keep track of the last non-empty row count to prevent layout jumps when refetching
+  useEffect(() => {
+    if (workLogs.length > 0) {
+      prevCountRef.current = workLogs.length;
+    }
+  }, [workLogs]);
 
   useEffect(() => {
     if (!isLoading) {
@@ -169,7 +182,7 @@ export const WorkLogTable: React.FC<WorkLogTableProps> = ({
           </thead>
           <tbody>
             {isSkeletonActive ? (
-              renderSkeletonRows(limit)
+              renderSkeletonRows(prevCountRef.current)
             ) : (
               <>
                 {workLogs.map((log) => (
