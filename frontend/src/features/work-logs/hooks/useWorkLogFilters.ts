@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { WorkLog } from '@/api/workLogsApi';
+import type { WorkLog, SortOrder } from '@/types';
 
 export const useWorkLogFilters = (workLogs: WorkLog[] = []) => {
-  // Helper to read initial URL parameter values
+  // Вспомогательная функция для чтения начальных значений параметров URL
   const getUrlParam = (key: string): string => {
     const params = new URLSearchParams(window.location.search);
     return params.get(key) || '';
@@ -12,15 +12,15 @@ export const useWorkLogFilters = (workLogs: WorkLog[] = []) => {
   const [endDate, setEndDate] = useState<string>(() => getUrlParam('endDate'));
   const [searchQuery, setSearchQuery] = useState<string>(() => getUrlParam('search'));
   
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>(() => {
+  const [sortOrder, setSortOrder] = useState<SortOrder>(() => {
     const sort = getUrlParam('sort');
     return sort === 'asc' || sort === 'desc' ? sort : 'desc';
   });
 
-  // Since filtering now happens on the backend, this is just a direct reference
+  // Поскольку фильтрация теперь происходит на бэкенде, это просто прямая ссылка
   const filteredAndSortedLogs = workLogs;
 
-  // Reactively synchronize filter state properties with browser URL query variables
+  // Реактивно синхронизирует состояние фильтра с переменными запроса URL браузера
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
 

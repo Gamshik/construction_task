@@ -1,29 +1,56 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { WorkLog } from '@/api/workLogsApi';
+import type { WorkLog, SortOrder } from '@/types';
 import { WorkLogTableRow } from './WorkLogTableRow';
-import { Skeleton } from '@/components/Loader/Skeleton';
+import { renderSkeletonRows, PaginationSkeleton } from './WorkLogTableSkeleton';
 import { Inbox, ArrowUp, ArrowDown } from 'lucide-react';
 import styles from './WorkLogTable.module.scss';
 
+/**
+ * Свойства компонента таблицы логов работ WorkLogTable.
+ */
 interface WorkLogTableProps {
+  /** Список логов работ для отображения */
   workLogs: WorkLog[];
+  /** Функция обратного вызова для редактирования записи */
   onEdit: (log: WorkLog) => void;
+  /** Функция обратного вызова для удаления записи по идентификатору */
   onDelete: (id: string) => void;
+  /** Флаг выполнения запроса удаления (блокирует кнопки) */
   isDeleting: boolean;
+  /** Флаг состояния первичной загрузки данных */
   isLoading: boolean;
+  /** Флаг любого фонового запроса данных (для отображения спиннеров) */
   isFetching: boolean;
-  sortOrder: 'asc' | 'desc';
-  setSortOrder: (val: 'asc' | 'desc') => void;
+  /** Текущее направление сортировки */
+  sortOrder: SortOrder;
+  /** Функция обратного вызова для переключения направления сортировки */
+  setSortOrder: (val: SortOrder) => void;
+  /** Идентификатор вновь добавленного лога для визуальной подсветки */
   newLogId?: string | null;
+  /** Идентификатор обновленного лога для визуальной подсветки */
   updatedLogId?: string | null;
+  /** Функция обратного вызова для загрузки следующей страницы пагинации */
   onLoadMore: () => void;
+  /** Флаг наличия следующей страницы для загрузки */
   hasNextPage: boolean;
+  /** Флаг выполнения запроса загрузки следующей страницы */
   isFetchingNextPage: boolean;
+  /** Лимит записей на одну страницу */
   limit: number;
+  /** Функция обратного вызова для изменения лимита записей на странице */
   setLimit: (val: number) => void;
+  /** Общее количество записей, удовлетворяющих фильтру на сервере */
   totalLogsCount: number;
 }
 
+/**
+ * Компонент таблицы выполненных работ.
+ * Отображает список записей, управляет состояниями пустой таблицы, сортировки и пагинации.
+ * Использует оптимизированный Skeleton-лоадер с задержкой в 200мс для предотвращения мигания интерфейса.
+ * 
+ * @param props Свойства таблицы
+ * @returns React-компонент WorkLogTable
+ */
 export const WorkLogTable: React.FC<WorkLogTableProps> = ({
   workLogs,
   onEdit,
@@ -46,25 +73,26 @@ export const WorkLogTable: React.FC<WorkLogTableProps> = ({
   const prevCountRef = useRef(limit);
   const wasEmptyRef = useRef(false);
 
-  // Keep track of page limit changes
+  // Синхронизация лимита для запоминания предыдущего количества строк
   useEffect(() => {
     prevCountRef.current = limit;
   }, [limit]);
 
-  // Keep track of whether the list was empty on the last successful load
+  // Запоминаем, был ли список пуст на предыдущей успешной загрузке
   useEffect(() => {
     if (!isLoading && !isFetching) {
       wasEmptyRef.current = workLogs.length === 0;
     }
   }, [workLogs, isLoading, isFetching]);
 
-  // Keep track of the last non-empty row count to prevent layout jumps when refetching
+  // Фиксируем последнее ненулевое количество строк для предотвращения скачков высоты таблицы
   useEffect(() => {
     if (workLogs.length > 0) {
       prevCountRef.current = workLogs.length;
     }
   }, [workLogs]);
 
+  // Показываем скелетон с задержкой 200мс, чтобы избежать мерцания на быстрых соединениях
   useEffect(() => {
     if (!isLoading) {
       setShowSkeleton(false);
@@ -73,11 +101,14 @@ export const WorkLogTable: React.FC<WorkLogTableProps> = ({
 
     const timer = setTimeout(() => {
       setShowSkeleton(true);
-    }, 200); // 200ms delay to prevent skeleton flickering on extremely fast queries
+    }, 200);
 
     return () => clearTimeout(timer);
   }, [isLoading]);
 
+  /**
+   * Переключает направление сортировки по дате (asc <-> desc).
+   */
   const handleSortToggle = () => {
     setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
   };
@@ -85,18 +116,7 @@ export const WorkLogTable: React.FC<WorkLogTableProps> = ({
   const isRefetchingEmpty = workLogs.length === 0 && isFetching && !wasEmptyRef.current;
   const isSkeletonActive = (showSkeleton || isRefetchingEmpty) && !wasEmptyRef.current;
 
-  console.log('WorkLogTable debug:', {
-    workLogsCount: workLogs.length,
-    isLoading,
-    isFetching,
-    showSkeleton,
-    isRefetchingEmpty,
-    wasEmpty: wasEmptyRef.current,
-    isSkeletonActive,
-    totalLogsCount
-  });
-
-  // Render empty state ONLY when fully loaded and there are indeed no records
+  // Отрисовка пустого состояния таблицы
   if (workLogs.length === 0 && !isSkeletonActive) {
     const isFetchingEmpty = isFetching;
     return (
@@ -121,66 +141,6 @@ export const WorkLogTable: React.FC<WorkLogTableProps> = ({
       </div>
     );
   }
-
-  // Unified Pagination Skeleton
-  const renderPaginationSkeleton = () => (
-    <div className={styles.paginationPanel}>
-      <div className={styles.progressBarContainer}>
-        <div className={styles.progressStats}>
-          <Skeleton width="220px" height="16px" />
-          <Skeleton width="32px" height="16px" />
-        </div>
-        <div className={styles.progressBarBg}>
-          <div className={styles.progressBarFill} style={{ width: '0%' }} />
-        </div>
-      </div>
-      <div className={styles.paginationActions}>
-        <Skeleton variant="rect" width={180} height={40} />
-        <div className={styles.limitSelectorWrapper}>
-          <Skeleton width="100px" height="16px" />
-          <Skeleton variant="rect" width={70} height={32} />
-        </div>
-      </div>
-    </div>
-  );
-
-  // Helper to render skeleton rows
-  const renderSkeletonRows = (count: number) => {
-    return Array.from({ length: count }, (_, i) => i).map((i) => (
-      <tr key={`skeleton-row-${i}`} className={styles.row}>
-        <td>
-          <div className={styles.cellWithIcon}>
-            <Skeleton variant="circle" width={15} height={15} />
-            <Skeleton width="90px" height="16px" />
-          </div>
-        </td>
-        <td>
-          <div className={styles.cellWithIcon}>
-            <Skeleton variant="circle" width={15} height={15} />
-            <Skeleton width="180px" height="16px" />
-          </div>
-        </td>
-        <td>
-          <div className={styles.cellWithIcon}>
-            <Skeleton variant="circle" width={15} height={15} />
-            <Skeleton width="60px" height="16px" />
-          </div>
-        </td>
-        <td>
-          <div className={styles.cellWithIcon}>
-            <Skeleton variant="circle" width={15} height={15} />
-            <Skeleton width="130px" height="16px" />
-          </div>
-        </td>
-        <td>
-          <div className={styles.actions}>
-            <Skeleton variant="rect" width={28} height={28} />
-            <Skeleton variant="rect" width={28} height={28} />
-          </div>
-        </td>
-      </tr>
-    ));
-  };
 
   const visibleCount = workLogs.length;
   const percentage = totalLogsCount > 0 ? Math.round((visibleCount / totalLogsCount) * 100) : 0;
@@ -237,62 +197,58 @@ export const WorkLogTable: React.FC<WorkLogTableProps> = ({
         </table>
       </div>
 
-      {isSkeletonActive ? (
-        renderPaginationSkeleton()
+      {isSkeletonActive || isFetchingNextPage ? (
+        <PaginationSkeleton />
       ) : (
         totalLogsCount > 0 && (
-          isFetchingNextPage ? (
-            renderPaginationSkeleton()
-          ) : (
-            <div className={styles.paginationPanel}>
-              <div className={styles.progressBarContainer}>
-                <div className={styles.progressStats}>
-                  <span>
-                    Отображено: <strong>{visibleCount}</strong> из <strong>{totalLogsCount}</strong> записей
-                  </span>
-                  <span className={styles.progressPercent}>{percentage}%</span>
-                </div>
-                <div className={styles.progressBarBg}>
-                  <div 
-                    className={styles.progressBarFill} 
-                    style={{ width: `${percentage}%` }}
-                  />
-                </div>
+          <div className={styles.paginationPanel}>
+            <div className={styles.progressBarContainer}>
+              <div className={styles.progressStats}>
+                <span>
+                  Отображено: <strong>{visibleCount}</strong> из <strong>{totalLogsCount}</strong> записей
+                </span>
+                <span className={styles.progressPercent}>{percentage}%</span>
               </div>
-
-              <div className={styles.paginationActions}>
-                <button
-                  type="button"
-                  className={`${styles.loadMoreBtn} ${isFetchingNextPage ? styles.loading : ''}`}
-                  onClick={onLoadMore}
-                  disabled={!hasNextPage || isFetchingNextPage}
-                >
-                  <div className={styles.spinner} />
-                  <span>
-                    {isFetchingNextPage
-                      ? 'Загрузка...'
-                      : hasNextPage
-                      ? `Показать еще +${limit}`
-                      : 'Все данные загружены'}
-                  </span>
-                </button>
-
-                <div className={styles.limitSelectorWrapper}>
-                  <span className={styles.limitLabel}>Показывать по:</span>
-                  <select
-                    className={styles.limitSelect}
-                    value={limit}
-                    onChange={(e) => setLimit(Number(e.target.value))}
-                  >
-                    <option value={5}>5</option>
-                    <option value={10}>10</option>
-                    <option value={15}>15</option>
-                    <option value={20}>20</option>
-                  </select>
-                </div>
+              <div className={styles.progressBarBg}>
+                <div 
+                  className={styles.progressBarFill} 
+                  style={{ width: `${percentage}%` }}
+                />
               </div>
             </div>
-          )
+
+            <div className={styles.paginationActions}>
+              <button
+                type="button"
+                className={`${styles.loadMoreBtn} ${isFetchingNextPage ? styles.loading : ''}`}
+                onClick={onLoadMore}
+                disabled={!hasNextPage || isFetchingNextPage}
+              >
+                <div className={styles.spinner} />
+                <span>
+                  {isFetchingNextPage
+                    ? 'Загрузка...'
+                    : hasNextPage
+                    ? `Показать еще +${limit}`
+                    : 'Все данные загружены'}
+                </span>
+              </button>
+
+              <div className={styles.limitSelectorWrapper}>
+                <span className={styles.limitLabel}>Показывать по:</span>
+                <select
+                  className={styles.limitSelect}
+                  value={limit}
+                  onChange={(e) => setLimit(Number(e.target.value))}
+                >
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                  <option value={15}>15</option>
+                  <option value={20}>20</option>
+                </select>
+              </div>
+            </div>
+          </div>
         )
       )}
     </>

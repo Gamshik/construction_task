@@ -1,17 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Calendar, User, FileText, BarChart, Edit2, Trash2, CheckCircle, X } from 'lucide-react';
-import { WorkLog } from '@/api/workLogsApi';
+import type { WorkLog } from '@/types';
+import { formatDateRussian } from '@/utils';
 import styles from './WorkLogTable.module.scss';
 
+/**
+ * Свойства компонента строки таблицы WorkLogTableRow.
+ */
 interface WorkLogTableRowProps {
+  /** Данные записи лога работы для отрисовки */
   log: WorkLog;
+  /** Функция обратного вызова для редактирования записи */
   onEdit: (log: WorkLog) => void;
+  /** Функция обратного вызова для удаления записи по идентификатору */
   onDelete: (id: string) => void;
+  /** Флаг выполнения запроса удаления (блокирует кнопки) */
   isDeleting: boolean;
+  /** Флаг того, что запись только что создана (для подсветки и плавной прокрутки) */
   isNew?: boolean;
+  /** Флаг того, что запись только что изменена (для подсветки и плавной прокрутки) */
   isUpdated?: boolean;
 }
 
+/**
+ * Компонент строки таблицы журнала работ.
+ * Содержит локальную логику подтверждения удаления записи с плавной анимацией скрытия.
+ * Автоматически скроллит к строке при ее добавлении/обновлении.
+ * 
+ * @param props Свойства строки таблицы
+ * @returns React-компонент WorkLogTableRow
+ */
 export const WorkLogTableRow: React.FC<WorkLogTableRowProps> = ({
   log,
   onEdit,
@@ -22,33 +40,43 @@ export const WorkLogTableRow: React.FC<WorkLogTableRowProps> = ({
 }) => {
   const [isFadingOut, setIsFadingOut] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
-  const rowRef = React.useRef<HTMLTableRowElement>(null);
+  const rowRef = useRef<HTMLTableRowElement>(null);
 
-  React.useEffect(() => {
+  // Скроллинг к новой или обновленной строке после закрытия модального окна
+  useEffect(() => {
     if ((isNew || isUpdated) && rowRef.current) {
-      // Wait 150ms for the modal close transition to start, then scroll smoothly
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         rowRef.current?.scrollIntoView({
           behavior: 'smooth',
           block: 'nearest',
         });
       }, 150);
+      return () => clearTimeout(timer);
     }
   }, [isNew, isUpdated]);
 
+  /**
+   * Подтверждает удаление, запускает анимацию скрытия и вызывает onDelete.
+   */
   const handleDeleteConfirm = () => {
     setIsConfirming(false);
     setIsFadingOut(true);
-    setTimeout(() => {
+    
+    // Задержка на завершение CSS-анимации исчезновения строки (350мс)
+    const timer = setTimeout(() => {
       onDelete(log.id);
-    }, 350); // Wait for the 350ms fade-out transition to complete
+    }, 350);
+    
+    return () => clearTimeout(timer);
   };
 
-  const formattedDate = new Date(log.date).toLocaleDateString('ru-RU', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-  });
+  const handleEditClick = () => onEdit(log);
+  const handleDeleteRequestClick = () => setIsConfirming(true);
+  const handleCancelDeleteClick = () => setIsConfirming(false);
+
+  const formattedDate = formatDateRussian(log.date);
+  const workTitle = log.workType?.title || '—';
+  const workUnit = log.workType?.unit || '';
 
   return (
     <tr
@@ -64,16 +92,16 @@ export const WorkLogTableRow: React.FC<WorkLogTableRowProps> = ({
       <td>
         <div className={styles.cellWithIcon}>
           <FileText size={15} className={styles.iconAccent} />
-          <span className={styles.bold} title={log.workType?.title || '—'}>
-            {log.workType?.title || '—'}
+          <span className={styles.bold} title={workTitle}>
+            {workTitle}
           </span>
         </div>
       </td>
       <td>
         <div className={styles.cellWithIcon}>
           <BarChart size={15} className={styles.iconMuted} />
-          <span title={`${log.volume} ${log.workType?.unit || ''}`}>
-            {log.volume} <span className={styles.unit}>{log.workType?.unit || ''}</span>
+          <span title={`${log.volume} ${workUnit}`}>
+            {log.volume} <span className={styles.unit}>{workUnit}</span>
           </span>
         </div>
       </td>
@@ -97,7 +125,7 @@ export const WorkLogTableRow: React.FC<WorkLogTableRowProps> = ({
               </button>
               <button
                 className={styles.cancelBtn}
-                onClick={() => setIsConfirming(false)}
+                onClick={handleCancelDeleteClick}
                 disabled={isDeleting}
                 title="Отмена"
               >
@@ -108,7 +136,7 @@ export const WorkLogTableRow: React.FC<WorkLogTableRowProps> = ({
             <>
               <button
                 className={styles.editBtn}
-                onClick={() => onEdit(log)}
+                onClick={handleEditClick}
                 disabled={isDeleting}
                 title="Редактировать запись"
               >
@@ -116,7 +144,7 @@ export const WorkLogTableRow: React.FC<WorkLogTableRowProps> = ({
               </button>
               <button
                 className={styles.deleteBtn}
-                onClick={() => setIsConfirming(true)}
+                onClick={handleDeleteRequestClick}
                 disabled={isDeleting}
                 title="Удалить запись"
               >

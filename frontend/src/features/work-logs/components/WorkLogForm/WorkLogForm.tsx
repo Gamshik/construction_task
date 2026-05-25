@@ -1,23 +1,43 @@
 import React, { useState, useEffect } from 'react';
 import { Check } from 'lucide-react';
-import { WorkLog, WorkType } from '@/api/workLogsApi';
-import { Button } from '@/components/Button/Button';
+import type { WorkLog, WorkType } from '@/types';
+import { Button } from '@/components';
+import { formatDateToInputValue, getTodayInputValue } from '@/utils';
 import styles from './WorkLogForm.module.scss';
 
+/**
+ * Свойства компонента формы WorkLogForm.
+ */
 interface WorkLogFormProps {
+  /** Список доступных типов (видов) работ */
   workTypes: WorkType[];
+  /** Исходные данные для редактирования лога (null при создании новой записи) */
   initialData?: WorkLog | null;
+  /**
+   * Функция обратного вызова при успешной отправке формы.
+   * Принимает очищенные валидные данные лога.
+   */
   onSubmit: (data: {
     date: string;
     workTypeId: string;
     volume: number;
     executorName: string;
   }) => void;
+  /** Флаг выполнения запроса отправки (блокирует форму и показывает лоадер) */
   isSubmitting: boolean;
+  /** Флаг успешного сохранения (для анимации чекбокса успеха) */
   isSuccess?: boolean;
+  /** Функция обратного вызова при нажатии кнопки отмены */
   onCancel: () => void;
 }
 
+/**
+ * Компонент формы создания/редактирования записи в журнале работ.
+ * Валидирует заполненные поля и отображает сообщения об ошибках.
+ * 
+ * @param props Свойства формы
+ * @returns React-компонент WorkLogForm
+ */
 export const WorkLogForm: React.FC<WorkLogFormProps> = ({
   workTypes,
   initialData,
@@ -30,25 +50,17 @@ export const WorkLogForm: React.FC<WorkLogFormProps> = ({
   const [workTypeId, setWorkTypeId] = useState('');
   const [volume, setVolume] = useState<number | ''>('');
   const [executorName, setExecutorName] = useState('');
-
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Синхронизация полей формы при изменении редактируемой записи
   useEffect(() => {
     if (initialData) {
-      const d = new Date(initialData.date);
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      setDate(`${year}-${month}-${day}`);
+      setDate(formatDateToInputValue(initialData.date));
       setWorkTypeId(initialData.workTypeId);
       setVolume(initialData.volume);
       setExecutorName(initialData.executorName);
     } else {
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, '0');
-      const day = String(today.getDate()).padStart(2, '0');
-      setDate(`${year}-${month}-${day}`);
+      setDate(getTodayInputValue());
       setWorkTypeId('');
       setVolume('');
       setExecutorName('');
@@ -56,15 +68,23 @@ export const WorkLogForm: React.FC<WorkLogFormProps> = ({
     setErrors({});
   }, [initialData]);
 
-
-
-
   const selectedWorkType = workTypes.find((wt) => wt.id === workTypeId);
 
-  const validate = () => {
+  /**
+   * Проверяет заполненность и корректность полей формы.
+   * 
+   * @returns Флаг валидности формы (true, если ошибок нет)
+   */
+  const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
-    if (!date) newErrors.date = 'Выберите дату выполнения';
-    if (!workTypeId) newErrors.workTypeId = 'Выберите вид работы';
+    
+    if (!date) {
+      newErrors.date = 'Выберите дату выполнения';
+    }
+    
+    if (!workTypeId) {
+      newErrors.workTypeId = 'Выберите вид работы';
+    }
 
     if (volume === '') {
       newErrors.volume = 'Укажите объем выполненных работ';
@@ -80,6 +100,10 @@ export const WorkLogForm: React.FC<WorkLogFormProps> = ({
     return Object.keys(newErrors).length === 0;
   };
 
+  /**
+   * Обработчик отправки формы.
+   * Предотвращает стандартное поведение страницы, валидирует и вызывает onSubmit.
+   */
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
