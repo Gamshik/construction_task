@@ -66,6 +66,7 @@ function App() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    isFetching,
   } = useInfiniteWorkLogs({
     limit,
     search: debouncedSearch,
@@ -118,6 +119,8 @@ function App() {
   const [isFormSuccess, setIsFormSuccess] = useState(false);
   const [newLogId, setNewLogId] = useState<string | null>(null);
   const [updatedLogId, setUpdatedLogId] = useState<string | null>(null);
+  const [pendingNewLogId, setPendingNewLogId] = useState<string | null>(null);
+  const [pendingUpdatedLogId, setPendingUpdatedLogId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isModalOpen) {
@@ -128,6 +131,27 @@ function App() {
       return () => clearTimeout(timer);
     }
   }, [isModalOpen]);
+
+  useEffect(() => {
+    if (!isFetching && !isModalOpen) {
+      if (pendingNewLogId) {
+        setNewLogId(pendingNewLogId);
+        setPendingNewLogId(null);
+        const timer = setTimeout(() => {
+          setNewLogId(null);
+        }, 3500);
+        return () => clearTimeout(timer);
+      }
+      if (pendingUpdatedLogId) {
+        setUpdatedLogId(pendingUpdatedLogId);
+        setPendingUpdatedLogId(null);
+        const timer = setTimeout(() => {
+          setUpdatedLogId(null);
+        }, 3500);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [pendingNewLogId, pendingUpdatedLogId, isFetching, isModalOpen]);
 
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     const saved = localStorage.getItem('theme');
@@ -196,20 +220,11 @@ function App() {
         {
           onSuccess: (updatedLog) => {
             setIsFormSuccess(true);
+            setPendingUpdatedLogId(updatedLog.id);
             setTimeout(() => {
               setIsModalOpen(false);
               setIsFormSuccess(false);
               showNotification('success', 'Запись успешно обновлена');
-              
-              // Wait 150ms for the modal close animation to be mid-way through before highlighting
-              setTimeout(() => {
-                setUpdatedLogId(updatedLog.id);
-
-                // Remove blue animation highlight after 3.5s
-                setTimeout(() => {
-                  setUpdatedLogId(null);
-                }, 3500);
-              }, 150);
             }, 600);
           },
           onError: (err: any) => {
@@ -222,21 +237,11 @@ function App() {
       createMutation.mutate(formData, {
         onSuccess: (newLog) => {
           setIsFormSuccess(true);
+          setPendingNewLogId(newLog.id);
           setTimeout(() => {
             setIsModalOpen(false);
             setIsFormSuccess(false);
             showNotification('success', 'Запись успешно добавлена в журнал');
-
-            // Wait 150ms for the modal close animation to be mid-way through before highlighting
-            setTimeout(() => {
-              // Trigger the row slide-down animation mid-way through closing!
-              setNewLogId(newLog.id);
-
-              // Remove green animation highlight after 3.5s
-              setTimeout(() => {
-                setNewLogId(null);
-              }, 3500);
-            }, 150);
           }, 600);
         },
         onError: (err: any) => {
