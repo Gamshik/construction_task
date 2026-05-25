@@ -11,6 +11,7 @@ interface WorkLogTableProps {
   onDelete: (id: string) => void;
   isDeleting: boolean;
   isLoading: boolean;
+  isFetching: boolean;
   sortOrder: 'asc' | 'desc';
   setSortOrder: (val: 'asc' | 'desc') => void;
   newLogId?: string | null;
@@ -29,6 +30,7 @@ export const WorkLogTable: React.FC<WorkLogTableProps> = ({
   onDelete,
   isDeleting,
   isLoading,
+  isFetching,
   sortOrder,
   setSortOrder,
   newLogId = null,
@@ -59,7 +61,11 @@ export const WorkLogTable: React.FC<WorkLogTableProps> = ({
     setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
   };
 
-  if (showSkeleton) {
+  // Show skeleton immediately if cache was cleared and we're refetching (no 200ms delay needed)
+  // Show skeleton after 200ms delay for initial loads (anti-flicker)
+  const isRefetchingEmpty = workLogs.length === 0 && isFetching;
+
+  if (showSkeleton || isRefetchingEmpty) {
     return (
       <div className={styles.tableWrapper}>
         <table className={styles.table}>

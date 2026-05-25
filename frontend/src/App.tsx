@@ -67,6 +67,7 @@ function App() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    isFetching,
   } = useInfiniteWorkLogs({
     limit,
     search: debouncedSearch,
@@ -372,6 +373,7 @@ function App() {
           onDelete={handleDelete}
           isDeleting={deleteMutation.isPending}
           isLoading={isLoadingLogs}
+          isFetching={isFetching}
           sortOrder={sortOrder}
           setSortOrder={setSortOrder}
           newLogId={newLogId}
