@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, Search } from 'lucide-react';
+import { Calendar, Search, Eraser } from 'lucide-react';
 import styles from './WorkLogFilters.module.scss';
 
 interface WorkLogFiltersProps {
@@ -21,10 +21,10 @@ export const WorkLogFilters: React.FC<WorkLogFiltersProps> = ({
   setSearchQuery,
   clearFilters,
 }) => {
-  const isFiltered = startDate || endDate || searchQuery;
+  const isFiltered = !!(startDate || endDate || searchQuery);
 
   return (
-    <div className={styles.container}>
+    <div className={`${styles.container} ${isFiltered ? styles.active : ''}`}>
       <div className={styles.searchBox}>
         <Search size={18} className={styles.icon} />
         <input
@@ -73,12 +73,16 @@ export const WorkLogFilters: React.FC<WorkLogFiltersProps> = ({
         </div>
       </div>
 
-      <div className={styles.actions}>
-        {isFiltered && (
-          <button className={styles.clearBtn} onClick={clearFilters}>
-            Сбросить
-          </button>
-        )}
+      <div className={`${styles.actions} ${isFiltered ? styles.active : ''}`}>
+        <button
+          className={styles.clearBtn}
+          onClick={clearFilters}
+          type="button"
+          tabIndex={isFiltered ? 0 : -1}
+          title="Сбросить все фильтры"
+        >
+          <Eraser size={16} />
+        </button>
       </div>
     </div>
   );

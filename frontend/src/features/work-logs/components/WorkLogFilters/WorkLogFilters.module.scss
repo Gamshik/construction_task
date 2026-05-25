@@ -13,6 +13,22 @@
   width: 100%;
   margin-bottom: 24px;
   background: var(--surface-color);
+  position: relative;
+  transition: $transition-smooth;
+
+  &.active {
+    border-color: rgba(255, 255, 255, 0.16);
+    box-shadow: $shadow-lg;
+    background: rgba(28, 28, 30, 0.85);
+    backdrop-filter: blur(20px);
+
+    // Light theme active state (slightly lighter grey border and light bg)
+    :global([data-theme="light"]) & {
+      border-color: rgba(0, 0, 0, 0.12);
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.05);
+    }
+  }
 
   @include respond-to('md') {
     flex-direction: column;
@@ -99,12 +115,27 @@
 }
 
 .actions {
+  position: absolute;
+  bottom: -18px;
+  right: 20px;
+  z-index: 10;
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(0.6) rotate(-30deg);
+  pointer-events: none;
+  // Soft, slow, and elegant exit transition (when .active is removed)
+  transition: opacity 0.45s cubic-bezier(0.25, 1, 0.5, 1),
+              transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
 
-  @include respond-to('md') {
-    justify-content: space-between;
+  &.active {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+    pointer-events: auto;
+    // Playful, responsive entry transition with spring overshoot (when .active is added)
+    transition: opacity 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+                transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 }
 
@@ -136,16 +167,43 @@
 }
 
 .clearBtn {
-  font-size: 0.88rem;
-  font-weight: 500;
-  color: $color-error;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--surface-color);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  padding: 8px 14px;
-  border-radius: $radius-md;
-  transition: $transition-smooth;
+  transition: all 0.2s ease;
 
   &:hover {
-    background: rgba(255, 69, 58, 0.08);
+    background: var(--surface-hover);
+    border-color: var(--text-muted);
+    transform: scale(1.08) rotate(-15deg);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  // Light theme overrides (lighter borders and background, so it is not too dark)
+  :global([data-theme="light"]) & {
+    background: #ffffff;
+    border-color: rgba(0, 0, 0, 0.12); // lighter circle border for light theme
+    color: var(--text-muted);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+
+    &:hover {
+      background: #f4f4f5;
+      border-color: rgba(0, 0, 0, 0.22); // slightly more visible border on hover
+      color: var(--text-main);
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+    }
   }
 }
 
@@ -159,6 +217,7 @@
 
   .searchBox {
     width: 100%;
+    max-width: none;
     padding: 10px 14px;
   }
 
@@ -184,15 +243,8 @@
   }
 
   .actions {
-    width: 100%;
-    margin-top: 4px;
-
-    .clearBtn {
-      width: 100%;
-      text-align: center;
-      padding: 10px;
-      background: rgba(255, 69, 58, 0.05);
-      border: 1px solid rgba(255, 69, 58, 0.15);
-    }
+    position: absolute;
+    bottom: -16px;
+    right: 16px;
   }
 }
