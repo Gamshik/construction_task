@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { WorkLog } from '@/api/workLogsApi';
 import { WorkLogTableRow } from './WorkLogTableRow';
 import { Skeleton } from '@/components/Loader/Skeleton';
@@ -14,6 +14,13 @@ interface WorkLogTableProps {
   sortOrder: 'asc' | 'desc';
   setSortOrder: (val: 'asc' | 'desc') => void;
   newLogId?: string | null;
+  updatedLogId?: string | null;
+  onLoadMore: () => void;
+  hasNextPage: boolean;
+  isFetchingNextPage: boolean;
+  limit: number;
+  setLimit: (val: number) => void;
+  totalLogsCount: number;
 }
 
 export const WorkLogTable: React.FC<WorkLogTableProps> = ({
@@ -25,18 +32,47 @@ export const WorkLogTable: React.FC<WorkLogTableProps> = ({
   sortOrder,
   setSortOrder,
   newLogId = null,
+  updatedLogId = null,
+  onLoadMore,
+  hasNextPage,
+  isFetchingNextPage,
+  limit,
+  setLimit,
+  totalLogsCount,
 }) => {
+  const [showSkeleton, setShowSkeleton] = useState(false);
+
+  useEffect(() => {
+    if (!isLoading) {
+      setShowSkeleton(false);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setShowSkeleton(true);
+    }, 200); // 200ms delay to prevent skeleton flickering on extremely fast queries (e.g. 14ms)
+
+    return () => clearTimeout(timer);
+  }, [isLoading]);
+
   const handleSortToggle = () => {
     setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
   };
 
-  if (isLoading) {
+  if (showSkeleton) {
     return (
       <div className={styles.tableWrapper}>
         <table className={styles.table}>
+          <colgroup>
+            <col width="150" />
+            <col />
+            <col width="120" />
+            <col width="220" />
+            <col width="100" />
+          </colgroup>
           <thead>
             <tr>
-              <th onClick={handleSortToggle} className={styles.sortableHeader}>
+              <th onClick={handleSortToggle} className={styles.sortableHeader} style={{ width: '150px' }}>
                 <div className={styles.headerContent}>
                   <span>Дата</span>
                   {sortOrder === 'asc' ? (
@@ -47,19 +83,44 @@ export const WorkLogTable: React.FC<WorkLogTableProps> = ({
                 </div>
               </th>
               <th>Вид работы</th>
-              <th>Объем</th>
-              <th>Исполнитель</th>
-              <th style={{ width: '90px' }}>Действия</th>
+              <th style={{ width: '120px' }}>Объем</th>
+              <th style={{ width: '220px' }}>Исполнитель</th>
+              <th style={{ width: '100px' }}>Действия</th>
             </tr>
           </thead>
           <tbody>
             {[1, 2, 3, 4].map((i) => (
               <tr key={i} className={styles.row}>
-                <td><Skeleton width="90px" height="18px" /></td>
-                <td><Skeleton width="180px" height="18px" /></td>
-                <td><Skeleton width="60px" height="18px" /></td>
-                <td><Skeleton width="130px" height="18px" /></td>
-                <td><Skeleton width="60px" height="18px" /></td>
+                <td>
+                  <div className={styles.cellWithIcon}>
+                    <Skeleton variant="circle" width={15} height={15} />
+                    <Skeleton width="90px" height="16px" />
+                  </div>
+                </td>
+                <td>
+                  <div className={styles.cellWithIcon}>
+                    <Skeleton variant="circle" width={15} height={15} />
+                    <Skeleton width="180px" height="16px" />
+                  </div>
+                </td>
+                <td>
+                  <div className={styles.cellWithIcon}>
+                    <Skeleton variant="circle" width={15} height={15} />
+                    <Skeleton width="60px" height="16px" />
+                  </div>
+                </td>
+                <td>
+                  <div className={styles.cellWithIcon}>
+                    <Skeleton variant="circle" width={15} height={15} />
+                    <Skeleton width="130px" height="16px" />
+                  </div>
+                </td>
+                <td>
+                  <div className={styles.actions}>
+                    <Skeleton variant="rect" width={28} height={28} />
+                    <Skeleton variant="rect" width={28} height={28} />
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -78,40 +139,104 @@ export const WorkLogTable: React.FC<WorkLogTableProps> = ({
     );
   }
 
+  const visibleCount = workLogs.length;
+  const percentage = totalLogsCount > 0 ? Math.round((visibleCount / totalLogsCount) * 100) : 0;
+
   return (
-    <div className={styles.tableWrapper}>
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <th onClick={handleSortToggle} className={styles.sortableHeader}>
-              <div className={styles.headerContent}>
-                <span>Дата</span>
-                {sortOrder === 'asc' ? (
-                  <ArrowUp size={12} className={styles.sortIcon} />
-                ) : (
-                  <ArrowDown size={12} className={styles.sortIcon} />
-                )}
-              </div>
-            </th>
-            <th>Вид работы</th>
-            <th>Объем</th>
-            <th>Исполнитель</th>
-            <th style={{ width: '90px' }}>Действия</th>
-          </tr>
-        </thead>
-        <tbody>
-          {workLogs.map((log) => (
-            <WorkLogTableRow
-              key={log.id}
-              log={log}
-              onEdit={onEdit}
-              onDelete={onDelete}
-              isDeleting={isDeleting}
-              isNew={newLogId === log.id}
-            />
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <>
+      <div className={styles.tableWrapper}>
+        <table className={styles.table}>
+          <colgroup>
+            <col width="150" />
+            <col />
+            <col width="120" />
+            <col width="220" />
+            <col width="100" />
+          </colgroup>
+          <thead>
+            <tr>
+              <th onClick={handleSortToggle} className={styles.sortableHeader} style={{ width: '150px' }}>
+                <div className={styles.headerContent}>
+                  <span>Дата</span>
+                  {sortOrder === 'asc' ? (
+                    <ArrowUp size={12} className={styles.sortIcon} />
+                  ) : (
+                    <ArrowDown size={12} className={styles.sortIcon} />
+                  )}
+                </div>
+              </th>
+              <th>Вид работы</th>
+              <th style={{ width: '120px' }}>Объем</th>
+              <th style={{ width: '220px' }}>Исполнитель</th>
+              <th style={{ width: '100px' }}>Действия</th>
+            </tr>
+          </thead>
+          <tbody>
+            {workLogs.map((log) => (
+              <WorkLogTableRow
+                key={log.id}
+                log={log}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                isDeleting={isDeleting}
+                isNew={newLogId === log.id}
+                isUpdated={updatedLogId === log.id}
+              />
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {totalLogsCount > 0 && (
+        <div className={styles.paginationPanel}>
+          <div className={styles.progressBarContainer}>
+            <div className={styles.progressStats}>
+              <span>
+                Отображено: <strong>{visibleCount}</strong> из <strong>{totalLogsCount}</strong> записей
+              </span>
+              <span className={styles.progressPercent}>{percentage}%</span>
+            </div>
+            <div className={styles.progressBarBg}>
+              <div 
+                className={styles.progressBarFill} 
+                style={{ width: `${percentage}%` }}
+              />
+            </div>
+          </div>
+
+          <div className={styles.paginationActions}>
+            <button
+              type="button"
+              className={`${styles.loadMoreBtn} ${isFetchingNextPage ? styles.loading : ''}`}
+              onClick={onLoadMore}
+              disabled={!hasNextPage || isFetchingNextPage}
+            >
+              <div className={styles.spinner} />
+              <span>
+                {isFetchingNextPage
+                  ? 'Загрузка...'
+                  : hasNextPage
+                  ? `Показать еще +${limit}`
+                  : 'Все данные загружены'}
+              </span>
+            </button>
+
+            <div className={styles.limitSelectorWrapper}>
+              <span className={styles.limitLabel}>Показывать по:</span>
+              <select
+                className={styles.limitSelect}
+                value={limit}
+                onChange={(e) => setLimit(Number(e.target.value))}
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={15}>15</option>
+                <option value={20}>20</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };

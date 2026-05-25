@@ -9,6 +9,7 @@ interface WorkLogTableRowProps {
   onDelete: (id: string) => void;
   isDeleting: boolean;
   isNew?: boolean;
+  isUpdated?: boolean;
 }
 
 export const WorkLogTableRow: React.FC<WorkLogTableRowProps> = ({
@@ -17,6 +18,7 @@ export const WorkLogTableRow: React.FC<WorkLogTableRowProps> = ({
   onDelete,
   isDeleting,
   isNew = false,
+  isUpdated = false,
 }) => {
   const [isFadingOut, setIsFadingOut] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
@@ -54,7 +56,7 @@ export const WorkLogTableRow: React.FC<WorkLogTableRowProps> = ({
   return (
     <tr
       ref={rowRef}
-      className={`${styles.row} ${isFadingOut ? styles.fadeOut : ''} ${isConfirming ? styles.rowConfirming : ''} ${isNew ? styles.rowNew : ''}`}
+      className={`${styles.row} ${isFadingOut ? styles.fadeOut : ''} ${isConfirming ? styles.rowConfirming : ''} ${isNew ? styles.rowNew : ''} ${isUpdated ? styles.rowUpdated : ''}`}
     >
       <td>
         <div className={styles.cellWithIcon}>

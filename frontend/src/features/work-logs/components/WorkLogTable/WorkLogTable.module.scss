@@ -14,9 +14,11 @@
 
 .table {
   width: 100%;
+  min-width: 750px;
   border-collapse: collapse;
   text-align: left;
   font-size: 0.88rem;
+  table-layout: fixed;
 
   th {
     background: rgba(255, 255, 255, 0.02);
@@ -191,61 +193,14 @@
   animation: slideInRowNewTr 3.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 
   td {
-    position: relative;
-    animation: fadeOutRowBorder 3.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: fadeOutRowGlowNew 3.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+}
 
-    // Ensure cell contents sit on top of the overlay
-    > * {
-      position: relative;
-      z-index: 1;
-    }
-
-    &::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      pointer-events: none;
-      z-index: 0;
-      opacity: 1;
-      animation: fadeOutRowGlow 3.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-
-      // Default (middle) cells: top/bottom glow (no partitions)
-      background-image: 
-        linear-gradient(to bottom, rgba(48, 209, 88, 0.04) 0%, rgba(48, 209, 88, 0) 60%),
-        linear-gradient(to top, rgba(48, 209, 88, 0.04) 0%, rgba(48, 209, 88, 0) 60%) !important;
-      background-color: rgba(48, 209, 88, 0.01) !important;
-    }
-
-    &:first-child {
-      border-top-left-radius: $radius-md;
-      border-bottom-left-radius: $radius-md;
-
-      &::after {
-        border-top-left-radius: $radius-md;
-        border-bottom-left-radius: $radius-md;
-        background-image: 
-          linear-gradient(to right, rgba(48, 209, 88, 0.04) 0%, rgba(48, 209, 88, 0) 40px),
-          linear-gradient(to bottom, rgba(48, 209, 88, 0.04) 0%, rgba(48, 209, 88, 0) 60%),
-          linear-gradient(to top, rgba(48, 209, 88, 0.04) 0%, rgba(48, 209, 88, 0) 60%) !important;
-      }
-    }
-
-    &:last-child {
-      border-top-right-radius: $radius-md;
-      border-bottom-right-radius: $radius-md;
-
-      &::after {
-        border-top-right-radius: $radius-md;
-        border-bottom-right-radius: $radius-md;
-        background-image: 
-          linear-gradient(to left, rgba(48, 209, 88, 0.04) 0%, rgba(48, 209, 88, 0) 40px),
-          linear-gradient(to bottom, rgba(48, 209, 88, 0.04) 0%, rgba(48, 209, 88, 0) 60%),
-          linear-gradient(to top, rgba(48, 209, 88, 0.04) 0%, rgba(48, 209, 88, 0) 60%) !important;
-      }
-    }
+// Fading blue glow animation for updated work logs
+.rowUpdated {
+  td {
+    animation: fadeOutRowGlowUpdated 3.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 }
 
@@ -254,7 +209,6 @@
     opacity: 0;
     transform: translateY(-24px);
   }
-
   15%,
   100% {
     opacity: 1;
@@ -262,27 +216,31 @@
   }
 }
 
-@keyframes fadeOutRowGlow {
+@keyframes fadeOutRowGlowNew {
   0%, 15% {
-    opacity: 1;
+    background-color: rgba(48, 209, 88, 0.12);
+    border-bottom-color: rgba(48, 209, 88, 0.35);
   }
   45% {
-    opacity: 0.55;
+    background-color: rgba(48, 209, 88, 0.05);
+    border-bottom-color: rgba(48, 209, 88, 0.15);
   }
   100% {
-    opacity: 0;
+    background-color: rgba(48, 209, 88, 0);
   }
 }
 
-@keyframes fadeOutRowBorder {
+@keyframes fadeOutRowGlowUpdated {
   0%, 15% {
-    border-bottom-color: rgba(48, 209, 88, 0.04) !important;
+    background-color: rgba(0, 113, 227, 0.14);
+    border-bottom-color: rgba(0, 113, 227, 0.35);
   }
   45% {
-    border-bottom-color: rgba(48, 209, 88, 0.02) !important;
+    background-color: rgba(0, 113, 227, 0.06);
+    border-bottom-color: rgba(0, 113, 227, 0.15);
   }
   100% {
-    // Let browser fall back to standard styles naturally
+    background-color: rgba(0, 113, 227, 0);
   }
 }
 
@@ -356,6 +314,7 @@
   .table {
     display: table;
     width: 100%;
+    min-width: 750px;
     font-size: 0.8rem;
 
     th {
@@ -386,6 +345,229 @@
     .cancelBtn {
       width: 26px;
       height: 26px;
+    }
+  }
+}
+
+// ==========================================
+// PROGRESSIVE PAGINATION STYLES (LOAD MORE)
+// ==========================================
+
+.paginationPanel {
+  margin-top: 24px;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.015);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid $border-color;
+  border-radius: $radius-lg;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: $shadow-sm;
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+.progressBarContainer {
+  width: 100%;
+}
+
+.progressStats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+  color: $color-text-muted;
+
+  strong {
+    color: $color-text-main;
+  }
+}
+
+.progressPercent {
+  font-weight: 600;
+  color: var(--accent-color) !important;
+}
+
+.progressBarBg {
+  width: 100%;
+  height: 4px;
+  background: var(--border-color);
+  border-radius: $radius-full;
+  overflow: hidden;
+}
+
+.progressBarFill {
+  height: 100%;
+  background: var(--accent-color);
+  border-radius: $radius-full;
+  transition: width 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.paginationActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.loadMoreBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: rgba(0, 113, 227, 0.08);
+  border: 1px solid rgba(0, 113, 227, 0.25);
+  color: var(--accent-color);
+  font-family: $font-family;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 10px 24px;
+  border-radius: $radius-md;
+  cursor: pointer;
+  transition: $transition-smooth;
+  box-shadow: 0 4px 12px rgba(0, 113, 227, 0.05);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '+';
+    font-size: 1.1rem;
+    font-weight: 500;
+    transition: $transition-smooth;
+  }
+
+  @media (hover: hover) {
+    &:hover:not(:disabled) {
+      transform: translateY(-1px);
+      background: var(--accent-color);
+      border-color: var(--accent-color);
+      color: #fff;
+      box-shadow: 0 6px 15px rgba(0, 113, 227, 0.25);
+    }
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    background: var(--surface-hover);
+    border-color: var(--border-color);
+    color: var(--text-muted);
+    box-shadow: none;
+    cursor: not-allowed;
+
+    &::before {
+      display: none;
+    }
+  }
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(0, 113, 227, 0.2);
+  border-radius: 50%;
+  border-top-color: var(--accent-color);
+  animation: spin 0.6s linear infinite;
+  display: none;
+}
+
+.loading {
+  &::before {
+    display: none !important;
+  }
+  .spinner {
+    display: inline-block;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.limitSelectorWrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  color: $color-text-muted;
+}
+
+.limitLabel {
+  font-weight: 500;
+}
+
+.limitSelect {
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 6px 32px 6px 12px;
+  border-radius: $radius-sm;
+  font-family: $font-family;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: $transition-smooth;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='%2386868b' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 16px;
+
+  &:hover {
+    border-color: var(--border-color-hover);
+    background-color: var(--surface-hover);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 10px rgba(0, 113, 227, 0.15);
+  }
+}
+
+// Fade in animation for newly loaded rows
+.row {
+  animation: fadeInRow 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeInRow {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@include respond-to('md') {
+  .paginationPanel {
+    padding: 16px;
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .paginationActions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    
+    .loadMoreBtn {
+      width: 100%;
+    }
+
+    .limitSelectorWrapper {
+      justify-content: space-between;
+      width: 100%;
+      margin-top: 4px;
     }
   }
 }
