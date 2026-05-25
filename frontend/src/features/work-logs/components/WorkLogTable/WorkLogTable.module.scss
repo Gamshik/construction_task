@@ -42,6 +42,7 @@
 
 .row {
   transition: $transition-smooth;
+  animation: fadeInRow 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 
   @media (hover: hover) {
     &:hover {
@@ -51,6 +52,20 @@
 
   &:last-child td {
     border-bottom: none;
+  }
+
+  &.rowNew {
+    animation: slideInRowNewTr 3.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+    td {
+      animation: fadeOutRowGlowNew 3.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+  }
+
+  &.rowUpdated {
+    td {
+      animation: fadeOutRowGlowUpdated 3.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
   }
 }
 
@@ -193,21 +208,6 @@
   }
 }
 
-// Fading green slide-in animation for newly created work logs
-.rowNew {
-  animation: slideInRowNewTr 3.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-
-  td {
-    animation: fadeOutRowGlowNew 3.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  }
-}
-
-// Fading blue glow animation for updated work logs
-.rowUpdated {
-  td {
-    animation: fadeOutRowGlowUpdated 3.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  }
-}
 
 @keyframes slideInRowNewTr {
   0% {
@@ -537,10 +537,7 @@
   }
 }
 
-// Fade in animation for newly loaded rows
-.row {
-  animation: fadeInRow 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
+
 
 @keyframes fadeInRow {
   from {

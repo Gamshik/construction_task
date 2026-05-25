@@ -66,7 +66,6 @@ function App() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    isFetching,
   } = useInfiniteWorkLogs({
     limit,
     search: debouncedSearch,
@@ -119,8 +118,6 @@ function App() {
   const [isFormSuccess, setIsFormSuccess] = useState(false);
   const [newLogId, setNewLogId] = useState<string | null>(null);
   const [updatedLogId, setUpdatedLogId] = useState<string | null>(null);
-  const [pendingNewLogId, setPendingNewLogId] = useState<string | null>(null);
-  const [pendingUpdatedLogId, setPendingUpdatedLogId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isModalOpen) {
@@ -131,19 +128,6 @@ function App() {
       return () => clearTimeout(timer);
     }
   }, [isModalOpen]);
-
-  useEffect(() => {
-    if (!isFetching && !isModalOpen) {
-      if (pendingNewLogId) {
-        setNewLogId(pendingNewLogId);
-        setPendingNewLogId(null);
-      }
-      if (pendingUpdatedLogId) {
-        setUpdatedLogId(pendingUpdatedLogId);
-        setPendingUpdatedLogId(null);
-      }
-    }
-  }, [pendingNewLogId, pendingUpdatedLogId, isFetching, isModalOpen]);
 
   useEffect(() => {
     if (newLogId) {
@@ -223,42 +207,44 @@ function App() {
     volume: number;
     executorName: string;
   }) => {
-    if (editingLog) {
-      const logId = editingLog.id;
-      updateMutation.mutate(
-        { id: logId, ...formData },
-        {
-          onSuccess: (updatedLog) => {
-            setIsFormSuccess(true);
-            setPendingUpdatedLogId(updatedLog.id);
-            setTimeout(() => {
-              setIsModalOpen(false);
-              setIsFormSuccess(false);
-              showNotification('success', 'Запись успешно обновлена');
-            }, 600);
-          },
-          onError: (err: any) => {
-            const msg = err.response?.data?.message || (err.request ? 'Не удалось сохранить изменения. Проверьте интернет-соединение.' : 'Ошибка обновления записи');
-            showNotification('error', Array.isArray(msg) ? msg[0] : msg);
-          },
-        }
-      );
-    } else {
-      createMutation.mutate(formData, {
-        onSuccess: (newLog) => {
-          setIsFormSuccess(true);
-          setPendingNewLogId(newLog.id);
+    try {
+      if (editingLog) {
+        const logId = editingLog.id;
+        const updatedLog = await updateMutation.mutateAsync({ id: logId, ...formData });
+        
+        setIsFormSuccess(true);
+        
+        // Wait 600ms for the modal success checkmark animation to display
+        setTimeout(() => {
+          setIsModalOpen(false);
+          setIsFormSuccess(false);
+          
+          // Once the modal close animation starts, trigger highlight and toast notification
           setTimeout(() => {
-            setIsModalOpen(false);
-            setIsFormSuccess(false);
+            setUpdatedLogId(updatedLog.id);
+            showNotification('success', 'Запись успешно обновлена');
+          }, 100);
+        }, 600);
+      } else {
+        const newLog = await createMutation.mutateAsync(formData);
+        
+        setIsFormSuccess(true);
+        
+        // Wait 600ms for the modal success checkmark animation to display
+        setTimeout(() => {
+          setIsModalOpen(false);
+          setIsFormSuccess(false);
+          
+          // Once the modal close animation starts, trigger highlight and toast notification
+          setTimeout(() => {
+            setNewLogId(newLog.id);
             showNotification('success', 'Запись успешно добавлена в журнал');
-          }, 600);
-        },
-        onError: (err: any) => {
-          const msg = err.response?.data?.message || (err.request ? 'Не удалось добавить запись. Проверьте интернет-соединение.' : 'Ошибка добавления записи');
-          showNotification('error', Array.isArray(msg) ? msg[0] : msg);
-        },
-      });
+          }, 100);
+        }, 600);
+      }
+    } catch (err: any) {
+      const msg = err.response?.data?.message || (err.request ? 'Не удалось сохранить изменения. Проверьте интернет-соединение.' : 'Ошибка сохранения записи');
+      showNotification('error', Array.isArray(msg) ? msg[0] : msg);
     }
   };
 

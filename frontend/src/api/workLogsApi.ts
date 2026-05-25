@@ -105,7 +105,7 @@ export const useCreateWorkLog = () => {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['work-logs'] });
+      return queryClient.invalidateQueries({ queryKey: ['work-logs'] });
     },
   });
 };
@@ -118,7 +118,7 @@ export const useUpdateWorkLog = () => {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['work-logs'] });
+      return queryClient.invalidateQueries({ queryKey: ['work-logs'] });
     },
   });
 };
