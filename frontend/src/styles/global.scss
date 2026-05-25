@@ -21,8 +21,8 @@ html {
   --accent-color: #0071e3;
   --accent-hover: #147ce5;
   --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --skeleton-start: #1c1c1e;
-  --skeleton-end: #2c2c2e;
+  --skeleton-start: rgba(255, 255, 255, 0.06);
+  --skeleton-end: rgba(255, 255, 255, 0.15);
 }
 
 [data-theme="light"] {
@@ -40,8 +40,8 @@ html {
   --accent-color: #0071e3;
   --accent-hover: #147ce5;
   --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  --skeleton-start: #e5e5ea;
-  --skeleton-end: #d1d1d6;
+  --skeleton-start: rgba(0, 0, 0, 0.05);
+  --skeleton-end: rgba(0, 0, 0, 0.13);
 }
 
 * {
