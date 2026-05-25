@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Plus, HardHat, CheckCircle, AlertCircle, BarChart3, Users, CalendarDays, Sun, Moon } from 'lucide-react';
 import {
   useInfiniteWorkLogs,
@@ -152,6 +153,12 @@ function App() {
     return (saved === 'light' || saved === 'dark') ? saved : 'dark';
   });
 
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    // Clear infinite pagination cache on filters/sorting change to ensure clean resets to page 1
+    queryClient.removeQueries({ queryKey: ['work-logs', 'infinite'] });
+  }, [sortOrder, debouncedSearch, startDate, endDate, queryClient]);
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
