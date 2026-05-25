@@ -8,6 +8,7 @@ interface WorkLogTableRowProps {
   onEdit: (log: WorkLog) => void;
   onDelete: (id: string) => void;
   isDeleting: boolean;
+  isNew?: boolean;
 }
 
 export const WorkLogTableRow: React.FC<WorkLogTableRowProps> = ({
@@ -15,16 +16,33 @@ export const WorkLogTableRow: React.FC<WorkLogTableRowProps> = ({
   onEdit,
   onDelete,
   isDeleting,
+  isNew = false,
 }) => {
   const [isFadingOut, setIsFadingOut] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
+  const rowRef = React.useRef<HTMLTableRowElement>(null);
+
+  React.useEffect(() => {
+    if (isNew && rowRef.current) {
+      const isMobile = window.innerWidth <= 768;
+      if (isMobile) {
+        // Wait 150ms for the modal drawer close transition to start, then scroll smoothly
+        setTimeout(() => {
+          rowRef.current?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+          });
+        }, 150);
+      }
+    }
+  }, [isNew]);
 
   const handleDeleteConfirm = () => {
     setIsConfirming(false);
     setIsFadingOut(true);
     setTimeout(() => {
       onDelete(log.id);
-    }, 280);
+    }, 350); // Wait for the 350ms fade-out transition to complete
   };
 
   const formattedDate = new Date(log.date).toLocaleDateString('ru-RU', {
@@ -34,7 +52,10 @@ export const WorkLogTableRow: React.FC<WorkLogTableRowProps> = ({
   });
 
   return (
-    <tr className={`${styles.row} ${isFadingOut ? styles.fadeOut : ''} ${isConfirming ? styles.rowConfirming : ''}`}>
+    <tr
+      ref={rowRef}
+      className={`${styles.row} ${isFadingOut ? styles.fadeOut : ''} ${isConfirming ? styles.rowConfirming : ''} ${isNew ? styles.rowNew : ''}`}
+    >
       <td>
         <div className={styles.cellWithIcon}>
           <Calendar size={15} className={styles.iconMuted} />

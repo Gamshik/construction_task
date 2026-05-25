@@ -82,7 +82,10 @@
   gap: 8px;
 }
 
-.editBtn, .deleteBtn, .confirmBtn, .cancelBtn {
+.editBtn,
+.deleteBtn,
+.confirmBtn,
+.cancelBtn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -144,19 +147,133 @@
 }
 
 @keyframes fadeInText {
-  from { opacity: 0; transform: translateX(4px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 
-// Fade out animation for smooth row deletion
-.fadeOut {
-  animation: fadeOutRow 0.28s ease-out forwards;
+// Fade out animation for smooth row deletion (applied to tds to bypass iOS Safari rendering limitations)
+.fadeOut td {
+  animation: fadeOutRowTd 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 
-@keyframes fadeOutRow {
-  0% { opacity: 1; transform: scale(1); }
-  100% { opacity: 0; transform: translateX(-16px) scale(0.97); height: 0; padding: 0; border: none; display: none; }
+@keyframes fadeOutRowTd {
+  0% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(0.95) translateY(8px);
+  }
+}
+
+// Fading green slide-in animation for newly created work logs
+.rowNew {
+  animation: slideInRowNewTr 3.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+  td {
+    position: relative;
+    animation: fadeOutRowBorder 3.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+    // Ensure cell contents sit on top of the overlay
+    > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 1;
+      animation: fadeOutRowGlow 3.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+      // Default (middle) cells: top/bottom glow (no partitions)
+      background-image: 
+        linear-gradient(to bottom, rgba(48, 209, 88, 0.04) 0%, rgba(48, 209, 88, 0) 60%),
+        linear-gradient(to top, rgba(48, 209, 88, 0.04) 0%, rgba(48, 209, 88, 0) 60%) !important;
+      background-color: rgba(48, 209, 88, 0.01) !important;
+    }
+
+    &:first-child {
+      border-top-left-radius: $radius-md;
+      border-bottom-left-radius: $radius-md;
+
+      &::after {
+        border-top-left-radius: $radius-md;
+        border-bottom-left-radius: $radius-md;
+        background-image: 
+          linear-gradient(to right, rgba(48, 209, 88, 0.04) 0%, rgba(48, 209, 88, 0) 40px),
+          linear-gradient(to bottom, rgba(48, 209, 88, 0.04) 0%, rgba(48, 209, 88, 0) 60%),
+          linear-gradient(to top, rgba(48, 209, 88, 0.04) 0%, rgba(48, 209, 88, 0) 60%) !important;
+      }
+    }
+
+    &:last-child {
+      border-top-right-radius: $radius-md;
+      border-bottom-right-radius: $radius-md;
+
+      &::after {
+        border-top-right-radius: $radius-md;
+        border-bottom-right-radius: $radius-md;
+        background-image: 
+          linear-gradient(to left, rgba(48, 209, 88, 0.04) 0%, rgba(48, 209, 88, 0) 40px),
+          linear-gradient(to bottom, rgba(48, 209, 88, 0.04) 0%, rgba(48, 209, 88, 0) 60%),
+          linear-gradient(to top, rgba(48, 209, 88, 0.04) 0%, rgba(48, 209, 88, 0) 60%) !important;
+      }
+    }
+  }
+}
+
+@keyframes slideInRowNewTr {
+  0% {
+    opacity: 0;
+    transform: translateY(-24px);
+  }
+
+  15%,
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOutRowGlow {
+  0%, 15% {
+    opacity: 1;
+  }
+  45% {
+    opacity: 0.55;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes fadeOutRowBorder {
+  0%, 15% {
+    border-bottom-color: rgba(48, 209, 88, 0.04) !important;
+  }
+  45% {
+    border-bottom-color: rgba(48, 209, 88, 0.02) !important;
+  }
+  100% {
+    // Let browser fall back to standard styles naturally
+  }
 }
 
 // Empty State
@@ -215,102 +332,48 @@
 
 @include respond-to('md') {
   .tableWrapper {
-    background: transparent;
-    border: none;
-    box-shadow: none;
-    overflow: visible;
+    border-radius: $radius-md;
+    margin-bottom: 16px;
+    box-shadow: $shadow-sm;
+    background: var(--surface-color);
+    border: 1px solid $border-color;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; // Smooth inertial scrolling on iOS
   }
 
   .table {
-    display: block;
+    display: table;
     width: 100%;
+    font-size: 0.8rem;
 
-    thead {
-      display: none; // Hide headings on mobile
+    th {
+      padding: 10px 8px;
+      font-size: 0.65rem;
     }
 
-    tbody {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      width: 100%;
+    td {
+      padding: 10px 8px;
     }
+  }
 
-    tr.row {
-      display: flex;
-      flex-direction: column;
-      background: var(--surface-color);
-      border: 1px solid $border-color;
-      border-radius: $radius-lg;
-      padding: 16px;
-      gap: 12px;
-      box-shadow: $shadow-sm;
-      position: relative;
-      transition: $transition-smooth;
+  .cellWithIcon {
+    gap: 4px;
+    white-space: normal; // Allow text to wrap on mobile viewports
 
-      &:hover {
-        border-color: $border-color-hover;
-      }
+    svg {
+      display: none !important; // Hide cell decorative icons on mobile to save precious horizontal space
+    }
+  }
 
-      td {
-        display: block;
-        padding: 0;
-        border: none;
-        width: 100% !important;
+  .actions {
+    gap: 4px;
 
-        // Date row with Actions container
-        &:nth-child(1) {
-          order: 1;
-          display: flex;
-          align-items: center;
-          border-bottom: 1px solid $border-color;
-          padding-bottom: 10px;
-          margin-bottom: 2px;
-          padding-right: 80px; // Make space for absolute positioned actions
-        }
-
-        // Work Type title
-        &:nth-child(2) {
-          order: 2;
-          font-size: 1rem;
-          .bold {
-            font-size: 1.05rem;
-            color: var(--text-main);
-          }
-        }
-
-        // Volume Badge (Apple Capsule Pill Badge Style)
-        &:nth-child(3) {
-          order: 3;
-          display: inline-flex;
-          background: rgba(0, 113, 227, 0.08);
-          border: 1px solid rgba(0, 113, 227, 0.15);
-          padding: 4px 10px;
-          border-radius: $radius-sm;
-          width: fit-content !important;
-          margin-top: 4px;
-        }
-
-        // Executor
-        &:nth-child(4) {
-          order: 4;
-          display: flex;
-          align-items: center;
-          margin-top: 4px;
-          border-top: 1px dashed $border-color;
-          padding-top: 10px;
-        }
-
-        // Action Buttons: Absolute positioned in the upper right
-        &:nth-child(5) {
-          order: 1;
-          position: absolute;
-          top: 14px;
-          right: 16px;
-          width: auto !important;
-          z-index: 10;
-        }
-      }
+    .editBtn,
+    .deleteBtn,
+    .confirmBtn,
+    .cancelBtn {
+      width: 26px;
+      height: 26px;
     }
   }
 }

@@ -13,6 +13,7 @@ interface WorkLogTableProps {
   isLoading: boolean;
   sortOrder: 'asc' | 'desc';
   setSortOrder: (val: 'asc' | 'desc') => void;
+  newLogId?: string | null;
 }
 
 export const WorkLogTable: React.FC<WorkLogTableProps> = ({
@@ -23,6 +24,7 @@ export const WorkLogTable: React.FC<WorkLogTableProps> = ({
   isLoading,
   sortOrder,
   setSortOrder,
+  newLogId = null,
 }) => {
   const handleSortToggle = () => {
     setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
@@ -105,6 +107,7 @@ export const WorkLogTable: React.FC<WorkLogTableProps> = ({
               onEdit={onEdit}
               onDelete={onDelete}
               isDeleting={isDeleting}
+              isNew={newLogId === log.id}
             />
           ))}
         </tbody>
