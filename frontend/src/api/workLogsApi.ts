@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { apiClient } from './client';
 
 export interface WorkType {
@@ -14,6 +14,16 @@ export interface WorkLog {
   workType: WorkType | null;
   volume: number;
   executorName: string;
+}
+
+export interface PaginatedWorkLogs {
+  data: WorkLog[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
 }
 
 export interface CreateWorkLogInput {
@@ -93,6 +103,92 @@ export const useWorkLogs = () => {
       }
     },
     retry: false, // Prevent infinite loading loops when server is unreachable
+  });
+};
+
+export interface WorkLogFilterParams {
+  limit: number;
+  search?: string;
+  startDate?: string;
+  endDate?: string;
+  sort?: 'asc' | 'desc';
+}
+
+export const useInfiniteWorkLogs = (params: WorkLogFilterParams) => {
+  return useInfiniteQuery<PaginatedWorkLogs, Error>({
+    queryKey: ['work-logs', 'infinite', params],
+    queryFn: async ({ pageParam = 1 }) => {
+      const page = pageParam as number;
+      try {
+        const response = await apiClient.get<PaginatedWorkLogs>('/work-logs', {
+          params: {
+            page,
+            limit: params.limit,
+            search: params.search,
+            startDate: params.startDate,
+            endDate: params.endDate,
+            sort: params.sort,
+          },
+        });
+        return response.data;
+      } catch (error) {
+        console.warn('Backend API connection failed, falling back to localStorage mock work logs pagination.', error);
+        
+        let allLogs = getMockLogs();
+
+        // 1. Text search filtering (executorName or workType.title)
+        if (params.search && params.search.trim() !== '') {
+          const q = params.search.toLowerCase();
+          allLogs = allLogs.filter(
+            (log) =>
+              log.executorName.toLowerCase().includes(q) ||
+              (log.workType && log.workType.title.toLowerCase().includes(q))
+          );
+        }
+
+        // 2. Start date range bounds filtering
+        if (params.startDate) {
+          const start = new Date(params.startDate);
+          start.setHours(0, 0, 0, 0);
+          allLogs = allLogs.filter((log) => new Date(log.date) >= start);
+        }
+
+        // 3. End date range bounds filtering
+        if (params.endDate) {
+          const end = new Date(params.endDate);
+          end.setHours(23, 59, 59, 999);
+          allLogs = allLogs.filter((log) => new Date(log.date) <= end);
+        }
+
+        // 4. Date sort ordering
+        allLogs.sort((a, b) => {
+          const dateA = new Date(a.date).getTime();
+          const dateB = new Date(b.date).getTime();
+          return params.sort === 'asc' ? dateA - dateB : dateB - dateA;
+        });
+
+        const total = allLogs.length;
+        const totalPages = Math.ceil(total / params.limit);
+        const startIndex = (page - 1) * params.limit;
+        const sliced = allLogs.slice(startIndex, startIndex + params.limit);
+        
+        return {
+          data: sliced,
+          meta: {
+            total,
+            page,
+            limit: params.limit,
+            totalPages,
+          }
+        };
+      }
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const { page, totalPages } = lastPage.meta;
+      return page < totalPages ? page + 1 : undefined;
+    },
+    retry: false,
   });
 };
 

@@ -1,48 +1,57 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { WorkLog } from '@/api/workLogsApi';
 
 export const useWorkLogFilters = (workLogs: WorkLog[] = []) => {
-  const [startDate, setStartDate] = useState<string>('');
-  const [endDate, setEndDate] = useState<string>('');
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  // Helper to read initial URL parameter values
+  const getUrlParam = (key: string): string => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get(key) || '';
+  };
 
-  const filteredAndSortedLogs = useMemo(() => {
-    let result = [...workLogs];
+  const [startDate, setStartDate] = useState<string>(() => getUrlParam('startDate'));
+  const [endDate, setEndDate] = useState<string>(() => getUrlParam('endDate'));
+  const [searchQuery, setSearchQuery] = useState<string>(() => getUrlParam('search'));
+  
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>(() => {
+    const sort = getUrlParam('sort');
+    return sort === 'asc' || sort === 'desc' ? sort : 'desc';
+  });
 
-    // Filter by search query (executor name or work type title)
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      result = result.filter(
-        (log) =>
-          log.executorName.toLowerCase().includes(q) ||
-          (log.workType && log.workType.title.toLowerCase().includes(q))
-      );
+  // Since filtering now happens on the backend, this is just a direct reference
+  const filteredAndSortedLogs = workLogs;
+
+  // Reactively synchronize filter state properties with browser URL query variables
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+
+    if (searchQuery.trim() !== '') {
+      params.set('search', searchQuery);
+    } else {
+      params.delete('search');
     }
 
-    // Filter by start date
     if (startDate) {
-      const start = new Date(startDate);
-      start.setHours(0, 0, 0, 0);
-      result = result.filter((log) => new Date(log.date) >= start);
+      params.set('startDate', startDate);
+    } else {
+      params.delete('startDate');
     }
 
-    // Filter by end date
     if (endDate) {
-      const end = new Date(endDate);
-      end.setHours(23, 59, 59, 999);
-      result = result.filter((log) => new Date(log.date) <= end);
+      params.set('endDate', endDate);
+    } else {
+      params.delete('endDate');
     }
 
-    // Sort by date
-    result.sort((a, b) => {
-      const dateA = new Date(a.date).getTime();
-      const dateB = new Date(b.date).getTime();
-      return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
-    });
+    if (sortOrder && sortOrder !== 'desc') {
+      params.set('sort', sortOrder);
+    } else {
+      params.delete('sort');
+    }
 
-    return result;
-  }, [workLogs, startDate, endDate, searchQuery, sortOrder]);
+    const newSearch = params.toString();
+    const newUrl = `${window.location.pathname}${newSearch ? '?' + newSearch : ''}`;
+    window.history.replaceState(null, '', newUrl);
+  }, [searchQuery, startDate, endDate, sortOrder]);
 
   const clearFilters = () => {
     setStartDate('');
