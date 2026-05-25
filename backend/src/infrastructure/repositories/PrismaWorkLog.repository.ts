@@ -38,7 +38,10 @@ export class PrismaWorkLogRepository implements WorkLogRepositoryPort {
       this.prisma.workLog.findMany({
         where,
         include: { workType: true },
-        orderBy: { date: sort ?? 'desc' },
+        orderBy: [
+          { date: sort ?? 'desc' },
+          { id: 'asc' },
+        ],
         skip,
         take,
       }),
