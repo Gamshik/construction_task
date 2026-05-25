@@ -67,71 +67,92 @@ export const WorkLogTable: React.FC<WorkLogTableProps> = ({
 
   if (showSkeleton || isRefetchingEmpty) {
     return (
-      <div className={styles.tableWrapper}>
-        <table className={styles.table}>
-          <colgroup>
-            <col width="150" />
-            <col />
-            <col width="120" />
-            <col width="220" />
-            <col width="100" />
-          </colgroup>
-          <thead>
-            <tr>
-              <th onClick={handleSortToggle} className={styles.sortableHeader} style={{ width: '150px' }}>
-                <div className={styles.headerContent}>
-                  <span>Дата</span>
-                  {sortOrder === 'asc' ? (
-                    <ArrowUp size={12} className={styles.sortIcon} />
-                  ) : (
-                    <ArrowDown size={12} className={styles.sortIcon} />
-                  )}
-                </div>
-              </th>
-              <th>Вид работы</th>
-              <th style={{ width: '120px' }}>Объем</th>
-              <th style={{ width: '220px' }}>Исполнитель</th>
-              <th style={{ width: '100px' }}>Действия</th>
-            </tr>
-          </thead>
-          <tbody>
-            {[1, 2, 3, 4].map((i) => (
-              <tr key={i} className={styles.row}>
-                <td>
-                  <div className={styles.cellWithIcon}>
-                    <Skeleton variant="circle" width={15} height={15} />
-                    <Skeleton width="90px" height="16px" />
+      <>
+        <div className={styles.tableWrapper}>
+          <table className={styles.table}>
+            <colgroup>
+              <col width="150" />
+              <col />
+              <col width="120" />
+              <col width="220" />
+              <col width="100" />
+            </colgroup>
+            <thead>
+              <tr>
+                <th onClick={handleSortToggle} className={styles.sortableHeader} style={{ width: '150px' }}>
+                  <div className={styles.headerContent}>
+                    <span>Дата</span>
+                    {sortOrder === 'asc' ? (
+                      <ArrowUp size={12} className={styles.sortIcon} />
+                    ) : (
+                      <ArrowDown size={12} className={styles.sortIcon} />
+                    )}
                   </div>
-                </td>
-                <td>
-                  <div className={styles.cellWithIcon}>
-                    <Skeleton variant="circle" width={15} height={15} />
-                    <Skeleton width="180px" height="16px" />
-                  </div>
-                </td>
-                <td>
-                  <div className={styles.cellWithIcon}>
-                    <Skeleton variant="circle" width={15} height={15} />
-                    <Skeleton width="60px" height="16px" />
-                  </div>
-                </td>
-                <td>
-                  <div className={styles.cellWithIcon}>
-                    <Skeleton variant="circle" width={15} height={15} />
-                    <Skeleton width="130px" height="16px" />
-                  </div>
-                </td>
-                <td>
-                  <div className={styles.actions}>
-                    <Skeleton variant="rect" width={28} height={28} />
-                    <Skeleton variant="rect" width={28} height={28} />
-                  </div>
-                </td>
+                </th>
+                <th>Вид работы</th>
+                <th style={{ width: '120px' }}>Объем</th>
+                <th style={{ width: '220px' }}>Исполнитель</th>
+                <th style={{ width: '100px' }}>Действия</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {Array.from({ length: limit }, (_, i) => i).map((i) => (
+                <tr key={i} className={styles.row}>
+                  <td>
+                    <div className={styles.cellWithIcon}>
+                      <Skeleton variant="circle" width={15} height={15} />
+                      <Skeleton width="90px" height="16px" />
+                    </div>
+                  </td>
+                  <td>
+                    <div className={styles.cellWithIcon}>
+                      <Skeleton variant="circle" width={15} height={15} />
+                      <Skeleton width="180px" height="16px" />
+                    </div>
+                  </td>
+                  <td>
+                    <div className={styles.cellWithIcon}>
+                      <Skeleton variant="circle" width={15} height={15} />
+                      <Skeleton width="60px" height="16px" />
+                    </div>
+                  </td>
+                  <td>
+                    <div className={styles.cellWithIcon}>
+                      <Skeleton variant="circle" width={15} height={15} />
+                      <Skeleton width="130px" height="16px" />
+                    </div>
+                  </td>
+                  <td>
+                    <div className={styles.actions}>
+                      <Skeleton variant="rect" width={28} height={28} />
+                      <Skeleton variant="rect" width={28} height={28} />
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className={styles.paginationPanel}>
+          <div className={styles.progressBarContainer}>
+            <div className={styles.progressStats}>
+              <Skeleton width="220px" height="16px" />
+              <Skeleton width="32px" height="16px" />
+            </div>
+            <div className={styles.progressBarBg}>
+              <div className={styles.progressBarFill} style={{ width: '0%' }} />
+            </div>
+          </div>
+          <div className={styles.paginationActions}>
+            <Skeleton variant="rect" width={180} height={40} />
+            <div className={styles.limitSelectorWrapper}>
+              <Skeleton width="100px" height="16px" />
+              <Skeleton variant="rect" width={70} height={32} />
+            </div>
+          </div>
+        </div>
+      </>
     );
   }
 
