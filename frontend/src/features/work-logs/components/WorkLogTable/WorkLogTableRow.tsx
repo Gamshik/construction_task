@@ -58,19 +58,21 @@ export const WorkLogTableRow: React.FC<WorkLogTableRowProps> = ({
       <td>
         <div className={styles.cellWithIcon}>
           <Calendar size={15} className={styles.iconMuted} />
-          <span>{formattedDate}</span>
+          <span title={formattedDate}>{formattedDate}</span>
         </div>
       </td>
       <td>
         <div className={styles.cellWithIcon}>
           <FileText size={15} className={styles.iconAccent} />
-          <span className={styles.bold}>{log.workType?.title || '—'}</span>
+          <span className={styles.bold} title={log.workType?.title || '—'}>
+            {log.workType?.title || '—'}
+          </span>
         </div>
       </td>
       <td>
         <div className={styles.cellWithIcon}>
           <BarChart size={15} className={styles.iconMuted} />
-          <span>
+          <span title={`${log.volume} ${log.workType?.unit || ''}`}>
             {log.volume} <span className={styles.unit}>{log.workType?.unit || ''}</span>
           </span>
         </div>
@@ -78,7 +80,7 @@ export const WorkLogTableRow: React.FC<WorkLogTableRowProps> = ({
       <td>
         <div className={styles.cellWithIcon}>
           <User size={15} className={styles.iconMuted} />
-          <span>{log.executorName}</span>
+          <span title={log.executorName}>{log.executorName}</span>
         </div>
       </td>
       <td>

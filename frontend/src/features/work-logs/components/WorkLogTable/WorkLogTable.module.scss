@@ -74,6 +74,15 @@
   align-items: center;
   gap: 10px;
   white-space: nowrap;
+  overflow: hidden;
+  max-width: 100%;
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
 }
 
 .iconMuted {
