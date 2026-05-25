@@ -40,7 +40,7 @@ export class PrismaWorkLogRepository implements WorkLogRepositoryPort {
         include: { workType: true },
         orderBy: [
           { date: sort ?? 'desc' },
-          { id: 'asc' },
+          { createdAt: sort ?? 'desc' },
         ],
         skip,
         take,
