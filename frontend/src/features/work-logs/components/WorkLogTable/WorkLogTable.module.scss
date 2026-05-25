@@ -41,8 +41,10 @@
 .row {
   transition: $transition-smooth;
 
-  &:hover {
-    background: rgba(255, 255, 255, 0.02);
+  @media (hover: hover) {
+    &:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
   }
 
   &:last-child td {
@@ -101,35 +103,43 @@
 .editBtn {
   color: $color-text-muted;
 
-  &:hover {
-    color: $color-primary;
-    background: rgba(0, 113, 227, 0.08);
+  @media (hover: hover) {
+    &:hover {
+      color: $color-primary;
+      background: rgba(0, 113, 227, 0.08);
+    }
   }
 }
 
 .deleteBtn {
   color: $color-text-muted;
 
-  &:hover {
-    color: $color-error;
-    background: rgba(255, 69, 58, 0.08);
+  @media (hover: hover) {
+    &:hover {
+      color: $color-error;
+      background: rgba(255, 69, 58, 0.08);
+    }
   }
 }
 
 .confirmBtn {
   color: $color-error;
 
-  &:hover {
-    background: rgba(255, 69, 58, 0.08);
+  @media (hover: hover) {
+    &:hover {
+      background: rgba(255, 69, 58, 0.08);
+    }
   }
 }
 
 .cancelBtn {
   color: $color-text-muted;
 
-  &:hover {
-    color: $color-text-main;
-    background: rgba(255, 255, 255, 0.06);
+  @media (hover: hover) {
+    &:hover {
+      color: $color-text-main;
+      background: rgba(255, 255, 255, 0.06);
+    }
   }
 }
 
@@ -313,9 +323,11 @@
   user-select: none;
   transition: $transition-smooth;
 
-  &:hover {
-    background: rgba(255, 255, 255, 0.05) !important;
-    color: $color-text-main !important;
+  @media (hover: hover) {
+    &:hover {
+      background: rgba(255, 255, 255, 0.05) !important;
+      color: $color-text-main !important;
+    }
   }
 }
 
