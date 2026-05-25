@@ -137,21 +137,31 @@ function App() {
       if (pendingNewLogId) {
         setNewLogId(pendingNewLogId);
         setPendingNewLogId(null);
-        const timer = setTimeout(() => {
-          setNewLogId(null);
-        }, 3500);
-        return () => clearTimeout(timer);
       }
       if (pendingUpdatedLogId) {
         setUpdatedLogId(pendingUpdatedLogId);
         setPendingUpdatedLogId(null);
-        const timer = setTimeout(() => {
-          setUpdatedLogId(null);
-        }, 3500);
-        return () => clearTimeout(timer);
       }
     }
   }, [pendingNewLogId, pendingUpdatedLogId, isFetching, isModalOpen]);
+
+  useEffect(() => {
+    if (newLogId) {
+      const timer = setTimeout(() => {
+        setNewLogId(null);
+      }, 3500);
+      return () => clearTimeout(timer);
+    }
+  }, [newLogId]);
+
+  useEffect(() => {
+    if (updatedLogId) {
+      const timer = setTimeout(() => {
+        setUpdatedLogId(null);
+      }, 3500);
+      return () => clearTimeout(timer);
+    }
+  }, [updatedLogId]);
 
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     const saved = localStorage.getItem('theme');
