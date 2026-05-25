@@ -25,19 +25,16 @@ export const WorkLogTableRow: React.FC<WorkLogTableRowProps> = ({
   const rowRef = React.useRef<HTMLTableRowElement>(null);
 
   React.useEffect(() => {
-    if (isNew && rowRef.current) {
-      const isMobile = window.innerWidth <= 768;
-      if (isMobile) {
-        // Wait 150ms for the modal drawer close transition to start, then scroll smoothly
-        setTimeout(() => {
-          rowRef.current?.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center',
-          });
-        }, 150);
-      }
+    if ((isNew || isUpdated) && rowRef.current) {
+      // Wait 150ms for the modal close transition to start, then scroll smoothly
+      setTimeout(() => {
+        rowRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+        });
+      }, 150);
     }
-  }, [isNew]);
+  }, [isNew, isUpdated]);
 
   const handleDeleteConfirm = () => {
     setIsConfirming(false);
@@ -99,6 +96,7 @@ export const WorkLogTableRow: React.FC<WorkLogTableRowProps> = ({
               <button
                 className={styles.cancelBtn}
                 onClick={() => setIsConfirming(false)}
+                disabled={isDeleting}
                 title="Отмена"
               >
                 <X size={15} />
@@ -109,6 +107,7 @@ export const WorkLogTableRow: React.FC<WorkLogTableRowProps> = ({
               <button
                 className={styles.editBtn}
                 onClick={() => onEdit(log)}
+                disabled={isDeleting}
                 title="Редактировать запись"
               >
                 <Edit2 size={15} />
