@@ -36,7 +36,13 @@ export const WorkLogFilters: React.FC<WorkLogFiltersProps> = ({
       </div>
 
       <div className={styles.dateRange}>
-        <div className={styles.inputGroup}>
+        <div
+          className={styles.inputGroup}
+          onClick={(e) => {
+            const input = e.currentTarget.querySelector('input');
+            if (input) input.showPicker?.();
+          }}
+        >
           <Calendar size={16} className={styles.icon} />
           <input
             type="date"
@@ -50,11 +56,16 @@ export const WorkLogFilters: React.FC<WorkLogFiltersProps> = ({
               }
             }}
             placeholder="С"
-            onClick={(e) => e.currentTarget.showPicker?.()}
           />
         </div>
         <span className={styles.divider}>—</span>
-        <div className={styles.inputGroup}>
+        <div
+          className={styles.inputGroup}
+          onClick={(e) => {
+            const input = e.currentTarget.querySelector('input');
+            if (input) input.showPicker?.();
+          }}
+        >
           <Calendar size={16} className={styles.icon} />
           <input
             type="date"
@@ -68,7 +79,6 @@ export const WorkLogFilters: React.FC<WorkLogFiltersProps> = ({
               }
             }}
             placeholder="По"
-            onClick={(e) => e.currentTarget.showPicker?.()}
           />
         </div>
       </div>
