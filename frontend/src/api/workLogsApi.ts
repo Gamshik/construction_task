@@ -1,71 +1,79 @@
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { apiClient } from './client';
+import type {
+  WorkType,
+  WorkLog,
+  PaginatedWorkLogs,
+  CreateWorkLogInput,
+  UpdateWorkLogInput,
+  WorkLogFilterParams,
+} from '@/types';
 
-export interface WorkType {
-  id: string;
-  title: string;
-  unit: string;
-}
+/**
+ * Константы маршрутов API для взаимодействия с бэкендом.
+ */
+export const API_ROUTES = {
+  /** Маршрут для получения списка видов работ */
+  WORK_TYPES: '/work-types',
+  /** Маршрут для работы со списком логов работ */
+  WORK_LOGS: '/work-logs',
+  /** Функция для получения маршрута конкретного лога работы по его идентификатору */
+  WORK_LOGS_DETAIL: (id: string) => `/work-logs/${id}`,
+} as const;
 
-export interface WorkLog {
-  id: string;
-  date: string;
-  workTypeId: string;
-  workType: WorkType | null;
-  volume: number;
-  executorName: string;
-}
-
-export interface PaginatedWorkLogs {
-  data: WorkLog[];
-  meta: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
-}
-
-export interface CreateWorkLogInput {
-  date: string;
-  workTypeId: string;
-  volume: number;
-  executorName: string;
-}
-
-export interface UpdateWorkLogInput extends CreateWorkLogInput {
-  id: string;
-}
+/**
+ * Константы ключей запросов React Query для управления кэшированием.
+ */
+export const QUERY_KEYS = {
+  /** Ключ кэша для списка видов работ */
+  WORK_TYPES: ['work-types'] as const,
+  /** Базовый ключ кэша для списка логов работ */
+  WORK_LOGS: ['work-logs'] as const,
+  /** Базовый ключ кэша для бесконечного списка логов работ */
+  INFINITE_WORK_LOGS_BASE: ['work-logs', 'infinite'] as const,
+  /**
+   * Функция для генерации уникального ключа кэша бесконечного списка логов с фильтрами.
+   * 
+   * @param params Параметры фильтрации и пагинации
+   * @returns Массив, представляющий ключ кэша в React Query
+   */
+  INFINITE_WORK_LOGS: (params: WorkLogFilterParams) => ['work-logs', 'infinite', params] as const,
+} as const;
 
 // ==========================================
-// REACT QUERY API HOOKS
+// API ХУКИ REACT QUERY
 // ==========================================
 
+/**
+ * Хук React Query для получения полного списка логов работ (без постраничного разбиения).
+ * Используется для получения всех записей одним запросом.
+ * 
+ * @returns Объект запроса React Query со списком WorkLog[]
+ */
 export const useWorkLogs = () => {
   return useQuery<WorkLog[]>({
-    queryKey: ['work-logs'],
+    queryKey: QUERY_KEYS.WORK_LOGS,
     queryFn: async () => {
-      const response = await apiClient.get<WorkLog[]>('/work-logs');
+      const response = await apiClient.get<WorkLog[]>(API_ROUTES.WORK_LOGS);
       return response.data;
     },
-    retry: false, // Prevent infinite loading loops when server is unreachable
+    retry: false, // Предотвращает бесконечные попытки загрузки при недоступности сервера
   });
 };
 
-export interface WorkLogFilterParams {
-  limit: number;
-  search?: string;
-  startDate?: string;
-  endDate?: string;
-  sort?: 'asc' | 'desc';
-}
-
+/**
+ * Хук React Query для бесконечной прокрутки / постраничной загрузки логов работ с фильтрацией.
+ * Получает данные порциями, зависящими от параметров фильтрации.
+ * 
+ * @param params Параметры фильтрации, поиска и сортировки
+ * @returns Объект бесконечного запроса React Query с постраничными данными PaginatedWorkLogs
+ */
 export const useInfiniteWorkLogs = (params: WorkLogFilterParams) => {
   return useInfiniteQuery<PaginatedWorkLogs, Error>({
-    queryKey: ['work-logs', 'infinite', params],
+    queryKey: QUERY_KEYS.INFINITE_WORK_LOGS(params),
     queryFn: async ({ pageParam = 1 }) => {
       const page = pageParam as number;
-      const response = await apiClient.get<PaginatedWorkLogs>('/work-logs', {
+      const response = await apiClient.get<PaginatedWorkLogs>(API_ROUTES.WORK_LOGS, {
         params: {
           page,
           limit: params.limit,
@@ -86,52 +94,76 @@ export const useInfiniteWorkLogs = (params: WorkLogFilterParams) => {
   });
 };
 
+/**
+ * Хук React Query для получения списка всех доступных видов работ.
+ * Используется, например, для заполнения выпадающего списка при создании/редактировании лога.
+ * 
+ * @returns Объект запроса React Query с массивом WorkType[]
+ */
 export const useWorkTypes = () => {
   return useQuery<WorkType[]>({
-    queryKey: ['work-types'],
+    queryKey: QUERY_KEYS.WORK_TYPES,
     queryFn: async () => {
-      const response = await apiClient.get<WorkType[]>('/work-types');
+      const response = await apiClient.get<WorkType[]>(API_ROUTES.WORK_TYPES);
       return response.data;
     },
     retry: false,
   });
 };
 
+/**
+ * Хук React Query для создания новой записи о выполненной работе.
+ * После успешного создания автоматически сбрасывает кэш списка логов для их мгновенного обновления.
+ * 
+ * @returns Объект мутации React Query для создания записи
+ */
 export const useCreateWorkLog = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: CreateWorkLogInput) => {
-      const response = await apiClient.post<WorkLog>('/work-logs', data);
+      const response = await apiClient.post<WorkLog>(API_ROUTES.WORK_LOGS, data);
       return response.data;
     },
     onSuccess: () => {
-      return queryClient.invalidateQueries({ queryKey: ['work-logs'] });
+      return queryClient.invalidateQueries({ queryKey: QUERY_KEYS.WORK_LOGS });
     },
   });
 };
 
+/**
+ * Хук React Query для обновления существующей записи о выполненной работе.
+ * После успешного обновления автоматически сбрасывает кэш списка логов для их мгновенного обновления.
+ * 
+ * @returns Объект мутации React Query для обновления записи
+ */
 export const useUpdateWorkLog = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, ...data }: UpdateWorkLogInput) => {
-      const response = await apiClient.put<WorkLog>(`/work-logs/${id}`, data);
+      const response = await apiClient.put<WorkLog>(API_ROUTES.WORK_LOGS_DETAIL(id), data);
       return response.data;
     },
     onSuccess: () => {
-      return queryClient.invalidateQueries({ queryKey: ['work-logs'] });
+      return queryClient.invalidateQueries({ queryKey: QUERY_KEYS.WORK_LOGS });
     },
   });
 };
 
+/**
+ * Хук React Query для удаления записи о выполненной работе по её идентификатору.
+ * После успешного удаления автоматически сбрасывает кэш списка логов для их мгновенного обновления.
+ * 
+ * @returns Объект мутации React Query для удаления записи
+ */
 export const useDeleteWorkLog = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const response = await apiClient.delete<{ success: boolean }>(`/work-logs/${id}`);
+      const response = await apiClient.delete<{ success: boolean }>(API_ROUTES.WORK_LOGS_DETAIL(id));
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['work-logs'] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.WORK_LOGS });
     },
   });
 };
