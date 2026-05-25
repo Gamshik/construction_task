@@ -1,15 +1,30 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
+import { lockBodyScroll, unlockBodyScroll } from '@/utils';
 import styles from './Modal.module.scss';
 
+/**
+ * Свойства компонента модального окна Modal.
+ */
 interface ModalProps {
+  /** Флаг открытого состояния модального окна */
   isOpen: boolean;
+  /** Функция обратного вызова для закрытия модального окна */
   onClose: () => void;
+  /** Заголовок модального окна */
   title: string;
+  /** Содержимое (тело) модального окна */
   children: React.ReactNode;
 }
 
+/**
+ * Компонент модального окна с анимацией открытия/закрытия, оверлеем и порталом в body.
+ * Управляет фокусом, закрытием по Escape/клику на оверлей, а также полностью блокирует скролл фона.
+ * 
+ * @param props Свойства модального окна
+ * @returns React-компонент Modal
+ */
 export const Modal: React.FC<ModalProps> = ({
   isOpen,
   onClose,
@@ -19,57 +34,35 @@ export const Modal: React.FC<ModalProps> = ({
   const [shouldRender, setShouldRender] = useState(isOpen);
   const [isClosing, setIsClosing] = useState(false);
 
-  const overlayRef = React.useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const scrollPositionRef = useRef(0);
 
-  const scrollPositionRef = React.useRef(0);
-
+  // Эффект для управления жизненным циклом модального окна и блокировки скролла
   useEffect(() => {
     if (isOpen) {
       setShouldRender(true);
       setIsClosing(false);
 
-      // 1. Calculate scrollbar width BEFORE making body fixed (while scrollbar is still visible!)
-      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-
-      // 2. Capture current scroll position Y
       const scrollY = window.scrollY;
       scrollPositionRef.current = scrollY;
-
-      // 3. Lock body scroll by making it fixed at current scroll Y position (prevents iOS keyboard page scroll)
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.left = '0';
-      document.body.style.right = '0';
-      document.body.style.overflow = 'hidden';
-
-      // 4. Apply scrollbar compensation padding if needed
-      if (scrollbarWidth > 0) {
-        document.body.style.paddingRight = `${scrollbarWidth}px`;
-      }
+      lockBodyScroll(scrollY);
     } else if (shouldRender) {
       setIsClosing(true);
 
       const scrollY = scrollPositionRef.current;
+      unlockBodyScroll(scrollY);
 
-      // Restore original body styles
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.left = '';
-      document.body.style.right = '';
-      document.body.style.overflow = '';
-      document.body.style.paddingRight = '';
-
-      // Instantly restore original scroll position without visual jumps
-      window.scrollTo(0, scrollY);
-
+      // Время ожидания совпадает с длительностью анимации закрытия (380мс)
       const timer = setTimeout(() => {
         setShouldRender(false);
         setIsClosing(false);
-      }, 380); // Wait for the transition to finish fully (specifically mobile drawer slide-down 350ms)
+      }, 380);
+      
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
 
+  // Эффект для предотвращения свайпов фона (touchmove) на iOS Safari
   useEffect(() => {
     const preventTouch = (e: TouchEvent) => {
       e.preventDefault();
@@ -77,7 +70,6 @@ export const Modal: React.FC<ModalProps> = ({
 
     const overlay = overlayRef.current;
     if (isOpen && overlay) {
-      // Use active listener (passive: false) to allow blocking background scrolling on iOS Safari
       overlay.addEventListener('touchmove', preventTouch, { passive: false });
     }
 
@@ -88,13 +80,16 @@ export const Modal: React.FC<ModalProps> = ({
     };
   }, [isOpen, shouldRender]);
 
+  // Эффект для закрытия модального окна по клавише Escape
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
+
     if (isOpen) {
       window.addEventListener('keydown', handleKeyDown);
     }
+    
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
@@ -115,7 +110,7 @@ export const Modal: React.FC<ModalProps> = ({
       >
         <div className={styles.header}>
           <h2>{title}</h2>
-          <button className={styles.closeBtn} onClick={onClose}>
+          <button className={styles.closeBtn} onClick={onClose} aria-label="Закрыть">
             <X size={20} />
           </button>
         </div>
@@ -125,4 +120,3 @@ export const Modal: React.FC<ModalProps> = ({
     document.body
   );
 };
-
