@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Plus, HardHat, CheckCircle, AlertCircle, BarChart3, Users, CalendarDays, Sun, Moon } from 'lucide-react';
 import {
@@ -7,25 +7,31 @@ import {
   useCreateWorkLog,
   useUpdateWorkLog,
   useDeleteWorkLog,
-  WorkLog,
-} from '@/api/workLogsApi';
-import { useWorkLogFilters } from '@/features/work-logs/hooks/useWorkLogFilters';
-import { WorkLogFilters } from '@/features/work-logs/components/WorkLogFilters/WorkLogFilters';
-import { WorkLogTable } from '@/features/work-logs/components/WorkLogTable/WorkLogTable';
-import { Modal } from '@/components/Modal/Modal';
-import { WorkLogForm } from '@/features/work-logs/components/WorkLogForm/WorkLogForm';
-import { Button } from '@/components/Button/Button';
-
+  QUERY_KEYS,
+} from '@/api';
+import type { WorkLog } from '@/types';
+import { useWorkLogFilters } from '@/features/work-logs/hooks';
+import { WorkLogFilters, WorkLogTable, WorkLogForm } from '@/features/work-logs/components';
+import { Modal, Button } from '@/components';
 import styles from './App.module.scss';
 
+/**
+ * Корневой компонент приложения Журнал Работ.
+ * Представляет собой контейнер дашборда (Dashboard View).
+ * Управляет состоянием фильтров, пагинации, модальных окон, темы оформления,
+ * уведомлениями и CRUD-операциями для журнала работ.
+ * 
+ * @returns React-элемент основного интерфейса приложения
+ */
 function App() {
+  // --- Состояние лимита пагинации ---
   const [limit, setLimit] = useState<number>(() => {
     const params = new URLSearchParams(window.location.search);
     const urlLimit = Number(params.get('limit'));
     return urlLimit && urlLimit > 0 ? urlLimit : 5;
   });
 
-  // Reactively synchronize page limit state with browser URL query variables
+  // Синхронизация лимита отображения в URL
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (limit && limit !== 5) {
@@ -38,6 +44,7 @@ function App() {
     window.history.replaceState(null, '', newUrl);
   }, [limit]);
 
+  // --- Фильтры логов ---
   const {
     startDate,
     setStartDate,
@@ -50,6 +57,7 @@ function App() {
     clearFilters,
   } = useWorkLogFilters();
 
+  // Дебаунс поискового запроса для предотвращения спама запросами к серверу
   const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
 
   useEffect(() => {
@@ -60,6 +68,7 @@ function App() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
+  // --- Запросы данных React Query ---
   const {
     data,
     isLoading: isLoadingLogs,
@@ -78,7 +87,7 @@ function App() {
 
   const { data: workTypes = [], isError: isTypesError } = useWorkTypes();
 
-  // Accumulate flat array representation of paginated data rows, filtering out any duplicate IDs that can arise from shifting database offsets during refetches or boundary shifts.
+  // --- Обработка и подготовка данных логов ---
   const workLogs: WorkLog[] = [];
   const seenIds = new Set<string>();
   if (data) {
@@ -93,8 +102,7 @@ function App() {
   }
   const totalLogsCount = data?.pages[0]?.meta.total ?? workLogs.length;
 
-  const filteredAndSortedLogs = workLogs;
-
+  // --- Состояния UI загрузок ---
   const [showMetricsLoader, setShowMetricsLoader] = useState(false);
 
   useEffect(() => {
@@ -110,10 +118,12 @@ function App() {
     return () => clearTimeout(timer);
   }, [isLoadingLogs]);
 
+  // --- Мутации данных (CRUD) ---
   const createMutation = useCreateWorkLog();
   const updateMutation = useUpdateWorkLog();
   const deleteMutation = useDeleteWorkLog();
 
+  // --- Состояния модальных окон и подсветок ---
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingLog, setEditingLog] = useState<WorkLog | null>(null);
   const [isStatsOpen, setIsStatsOpen] = useState(false);
@@ -121,9 +131,9 @@ function App() {
   const [newLogId, setNewLogId] = useState<string | null>(null);
   const [updatedLogId, setUpdatedLogId] = useState<string | null>(null);
 
+  // Сброс редактируемой записи по окончании анимации закрытия модального окна (380мс)
   useEffect(() => {
     if (!isModalOpen) {
-      // Clear editing log only after the modal's close animation completes (380ms)
       const timer = setTimeout(() => {
         setEditingLog(null);
       }, 380);
@@ -131,6 +141,7 @@ function App() {
     }
   }, [isModalOpen]);
 
+  // Сброс подсветки добавленной строки
   useEffect(() => {
     if (newLogId) {
       const timer = setTimeout(() => {
@@ -140,6 +151,7 @@ function App() {
     }
   }, [newLogId]);
 
+  // Сброс подсветки обновленной строки
   useEffect(() => {
     if (updatedLogId) {
       const timer = setTimeout(() => {
@@ -149,17 +161,19 @@ function App() {
     }
   }, [updatedLogId]);
 
+  // --- Тема оформления ---
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     const saved = localStorage.getItem('theme');
-    return (saved === 'light' || saved === 'dark') ? saved : 'dark';
+    return saved === 'light' || saved === 'dark' ? saved : 'dark';
   });
 
   const queryClient = useQueryClient();
 
+  // Сброс кэша пагинации при изменении фильтров
   useEffect(() => {
-    // Clear infinite pagination cache on filters/sorting change to ensure clean resets to page 1
-    queryClient.removeQueries({ queryKey: ['work-logs', 'infinite'] });
+    queryClient.removeQueries({ queryKey: QUERY_KEYS.INFINITE_WORK_LOGS_BASE });
   }, [sortOrder, debouncedSearch, startDate, endDate, queryClient]);
+
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
@@ -169,34 +183,37 @@ function App() {
     setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
   };
 
-
+  // --- Тост-уведомления ---
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-  const [toastTimeout, setToastTimeout] = useState<any>(null);
+  const toastTimeoutRef = useRef<any>(null);
 
   const showNotification = (type: 'success' | 'error', message: string) => {
-    if (toastTimeout) {
-      clearTimeout(toastTimeout);
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
     }
     setNotification({ type, message });
-    const id = setTimeout(() => {
+    toastTimeoutRef.current = setTimeout(() => {
       setNotification(null);
-      setToastTimeout(null);
+      toastTimeoutRef.current = null;
     }, 1800);
-    setToastTimeout(id);
   };
 
   useEffect(() => {
     return () => {
-      if (toastTimeout) clearTimeout(toastTimeout);
+      if (toastTimeoutRef.current) {
+        clearTimeout(toastTimeoutRef.current);
+      }
     };
-  }, [toastTimeout]);
+  }, []);
 
+  // Вывод тоста ошибки загрузки
   useEffect(() => {
     if (isLogsError || isTypesError) {
       showNotification('error', 'Не удалось загрузить данные. Проверьте интернет-соединение.');
     }
   }, [isLogsError, isTypesError]);
 
+  // --- Обработчики кликов/действий ---
   const handleAddClick = () => {
     setIsFormSuccess(false);
     setEditingLog(null);
@@ -222,12 +239,10 @@ function App() {
 
         setIsFormSuccess(true);
 
-        // Wait 600ms for the modal success checkmark animation to display
         setTimeout(() => {
           setIsModalOpen(false);
           setIsFormSuccess(false);
 
-          // Once the modal close animation starts, trigger highlight and toast notification
           setTimeout(() => {
             setUpdatedLogId(updatedLog.id);
             showNotification('success', 'Запись успешно обновлена');
@@ -238,12 +253,10 @@ function App() {
 
         setIsFormSuccess(true);
 
-        // Wait 600ms for the modal success checkmark animation to display
         setTimeout(() => {
           setIsModalOpen(false);
           setIsFormSuccess(false);
 
-          // Once the modal close animation starts, trigger highlight and toast notification
           setTimeout(() => {
             setNewLogId(newLog.id);
             showNotification('success', 'Запись успешно добавлена в журнал');
@@ -251,7 +264,9 @@ function App() {
         }, 600);
       }
     } catch (err: any) {
-      const msg = err.response?.data?.message || (err.request ? 'Не удалось сохранить изменения. Проверьте интернет-соединение.' : 'Ошибка сохранения записи');
+      const msg =
+        err.response?.data?.message ||
+        (err.request ? 'Не удалось сохранить изменения. Проверьте интернет-соединение.' : 'Ошибка сохранения записи');
       showNotification('error', Array.isArray(msg) ? msg[0] : msg);
     }
   };
@@ -262,12 +277,15 @@ function App() {
         showNotification('success', 'Запись удалена из журнала');
       },
       onError: (err: any) => {
-        const msg = err.response?.data?.message || (err.request ? 'Не удалось удалить запись. Проверьте интернет-соединение.' : 'Ошибка удаления записи');
+        const msg =
+          err.response?.data?.message ||
+          (err.request ? 'Не удалось удалить запись. Проверьте интернет-соединение.' : 'Ошибка удаления записи');
         showNotification('error', Array.isArray(msg) ? msg[0] : msg);
       },
     });
   };
 
+  // --- Расчет метрик дашборда ---
   const totalEntries = totalLogsCount;
   const uniqueExecutors = new Set(workLogs.map((wl) => wl.executorName)).size;
   const todayEntries = workLogs.filter((wl) => {
@@ -278,6 +296,7 @@ function App() {
 
   return (
     <div className={styles.appContainer}>
+      {/* Тост-уведомление об успешных действиях или ошибках */}
       {notification && (
         <div className={`${styles.toast} ${styles[notification.type]}`}>
           {notification.type === 'success' ? <CheckCircle size={18} /> : <AlertCircle size={18} />}
@@ -285,6 +304,7 @@ function App() {
         </div>
       )}
 
+      {/* Шапка дашборда */}
       <header className={styles.header}>
         <div className={styles.headerBrand}>
           <div className={styles.logoBox}>
@@ -296,6 +316,7 @@ function App() {
           </div>
         </div>
 
+        {/* Элементы управления оформлением и аналитикой */}
         <div className={styles.controls}>
           <button
             type="button"
@@ -316,6 +337,7 @@ function App() {
         </div>
       </header>
 
+      {/* Панель метрик / KPI строительной смены */}
       <section className={styles.metrics}>
         <div className={styles.metricCard}>
           <div className={styles.metricHeader}>
@@ -345,6 +367,7 @@ function App() {
         </div>
       </section>
 
+      {/* Основная рабочая область журнала */}
       <main className={styles.mainContent}>
         <div className={styles.sectionHeader}>
           <div className={styles.sectionTitle}>
@@ -357,6 +380,7 @@ function App() {
           </Button>
         </div>
 
+        {/* Компонент фильтрации */}
         <WorkLogFilters
           startDate={startDate}
           setStartDate={setStartDate}
@@ -367,11 +391,12 @@ function App() {
           clearFilters={clearFilters}
         />
 
+        {/* Таблица записей с бесконечной подгрузкой */}
         <WorkLogTable
-          workLogs={filteredAndSortedLogs}
+          workLogs={workLogs}
           onEdit={handleEditClick}
           onDelete={handleDelete}
-          isDeleting={deleteMutation.isPending}
+          isDeleting={false} // Состояние удаления управляется плавным уходом строки локально
           isLoading={isLoadingLogs}
           isFetching={isFetching}
           sortOrder={sortOrder}
@@ -387,6 +412,7 @@ function App() {
         />
       </main>
 
+      {/* Модальное окно редактирования/создания лога */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -402,6 +428,7 @@ function App() {
         />
       </Modal>
 
+      {/* Модальное окно расширенной статистики (для мобильных устройств) */}
       <Modal
         isOpen={isStatsOpen}
         onClose={() => setIsStatsOpen(false)}
@@ -437,6 +464,7 @@ function App() {
         </div>
       </Modal>
 
+      {/* Футер */}
       <footer className={styles.footer}>
         <div className={styles.footerInfo}>
           <span>&copy; {new Date().getFullYear()} ООО «СтройКонтроль». Все права защищены. &bull; Система мониторинга строительных процессов</span>

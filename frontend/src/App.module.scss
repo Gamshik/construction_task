@@ -252,14 +252,17 @@
     opacity: 0;
     transform: translate(-50%, -20px) scale(0.95);
   }
+
   16% {
     opacity: 1;
     transform: translate(-50%, 0) scale(1);
   }
+
   84% {
     opacity: 1;
     transform: translate(-50%, 0) scale(1);
   }
+
   100% {
     opacity: 0;
     transform: translate(-50%, -20px) scale(0.95);
