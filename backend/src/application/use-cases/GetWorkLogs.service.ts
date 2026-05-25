@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WorkLog } from '@domain/WorkLog.entity';
-import { WorkLogRepositoryPort } from '@application/ports/WorkLogRepository.interface';
+import { WorkLogRepositoryPort, WorkLogFilterOptions } from '@application/ports/WorkLogRepository.interface';
 
 @Injectable()
 export class GetWorkLogsService {
@@ -9,7 +9,7 @@ export class GetWorkLogsService {
     private readonly workLogRepository: WorkLogRepositoryPort,
   ) {}
 
-  async execute(): Promise<WorkLog[]> {
-    return this.workLogRepository.findAll();
+  async execute(options?: WorkLogFilterOptions): Promise<{ workLogs: WorkLog[]; total: number }> {
+    return this.workLogRepository.findAll(options);
   }
 }

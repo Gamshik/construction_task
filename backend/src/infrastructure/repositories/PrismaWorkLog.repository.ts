@@ -1,19 +1,54 @@
 import { Injectable } from '@nestjs/common';
-import { WorkLogRepositoryPort } from '@application/ports/WorkLogRepository.interface';
+import { WorkLogRepositoryPort, WorkLogFilterOptions } from '@application/ports/WorkLogRepository.interface';
 import { WorkLog } from '@domain/WorkLog.entity';
 import { PrismaService } from './Prisma.service';
 import { WorkLogMapper } from './mappers/WorkLog.mapper';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class PrismaWorkLogRepository implements WorkLogRepositoryPort {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(): Promise<WorkLog[]> {
-    const raw = await this.prisma.workLog.findMany({
-      include: { workType: true },
-      orderBy: { date: 'desc' },
-    });
-    return raw.map(WorkLogMapper.toDomain);
+  async findAll(options?: WorkLogFilterOptions): Promise<{ workLogs: WorkLog[]; total: number }> {
+    const { page, limit, search, startDate, endDate, sort } = options || {};
+    
+    const skip = page && limit ? (page - 1) * limit : undefined;
+    const take = limit;
+
+    const where: Prisma.WorkLogWhereInput = {};
+
+    if (search && search.trim() !== '') {
+      where.OR = [
+        { executorName: { contains: search, mode: 'insensitive' } },
+        { workType: { title: { contains: search, mode: 'insensitive' } } },
+      ];
+    }
+
+    if (startDate || endDate) {
+      where.date = {};
+      if (startDate) {
+        where.date.gte = startDate;
+      }
+      if (endDate) {
+        where.date.lte = endDate;
+      }
+    }
+
+    const [raw, total] = await Promise.all([
+      this.prisma.workLog.findMany({
+        where,
+        include: { workType: true },
+        orderBy: { date: sort ?? 'desc' },
+        skip,
+        take,
+      }),
+      this.prisma.workLog.count({ where }),
+    ]);
+
+    return {
+      workLogs: raw.map(WorkLogMapper.toDomain),
+      total,
+    };
   }
 
   async findById(id: string): Promise<WorkLog | null> {
