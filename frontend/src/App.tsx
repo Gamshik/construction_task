@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, HardHat, CheckCircle, AlertCircle, BarChart3, Users, CalendarDays, Sun, Moon } from 'lucide-react';
 import {
-  useWorkLogs,
+  useInfiniteWorkLogs,
   useWorkTypes,
   useCreateWorkLog,
   useUpdateWorkLog,
@@ -18,8 +18,84 @@ import { Button } from '@/components/Button/Button';
 import styles from './App.module.scss';
 
 function App() {
-  const { data: workLogs = [], isLoading: isLoadingLogs, isError: isLogsError } = useWorkLogs();
+  const [limit, setLimit] = useState<number>(() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlLimit = Number(params.get('limit'));
+    return urlLimit && urlLimit > 0 ? urlLimit : 5;
+  });
+
+  // Reactively synchronize page limit state with browser URL query variables
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (limit && limit !== 5) {
+      params.set('limit', String(limit));
+    } else {
+      params.delete('limit');
+    }
+    const newSearch = params.toString();
+    const newUrl = `${window.location.pathname}${newSearch ? '?' + newSearch : ''}`;
+    window.history.replaceState(null, '', newUrl);
+  }, [limit]);
+
+  const {
+    startDate,
+    setStartDate,
+    endDate,
+    setEndDate,
+    searchQuery,
+    setSearchQuery,
+    sortOrder,
+    setSortOrder,
+    clearFilters,
+  } = useWorkLogFilters();
+
+  const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const {
+    data,
+    isLoading: isLoadingLogs,
+    isError: isLogsError,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteWorkLogs({
+    limit,
+    search: debouncedSearch,
+    startDate,
+    endDate,
+    sort: sortOrder,
+  });
+
   const { data: workTypes = [], isError: isTypesError } = useWorkTypes();
+
+  // Accumulate flat array representation of paginated data rows
+  const workLogs = data ? data.pages.flatMap((page) => page.data) : [];
+  const totalLogsCount = data?.pages[0]?.meta.total ?? workLogs.length;
+
+  const filteredAndSortedLogs = workLogs;
+
+  const [showMetricsLoader, setShowMetricsLoader] = useState(false);
+
+  useEffect(() => {
+    if (!isLoadingLogs) {
+      setShowMetricsLoader(false);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setShowMetricsLoader(true);
+    }, 200); // 200ms delay to prevent metrics flickering on extremely fast queries
+
+    return () => clearTimeout(timer);
+  }, [isLoadingLogs]);
 
   const createMutation = useCreateWorkLog();
   const updateMutation = useUpdateWorkLog();
@@ -30,6 +106,7 @@ function App() {
   const [isStatsOpen, setIsStatsOpen] = useState(false);
   const [isFormSuccess, setIsFormSuccess] = useState(false);
   const [newLogId, setNewLogId] = useState<string | null>(null);
+  const [updatedLogId, setUpdatedLogId] = useState<string | null>(null);
 
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     const saved = localStorage.getItem('theme');
@@ -45,18 +122,6 @@ function App() {
     setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
   };
 
-  const {
-    startDate,
-    setStartDate,
-    endDate,
-    setEndDate,
-    searchQuery,
-    setSearchQuery,
-    sortOrder,
-    setSortOrder,
-    filteredAndSortedLogs,
-    clearFilters,
-  } = useWorkLogFilters(workLogs);
 
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [toastTimeout, setToastTimeout] = useState<any>(null);
@@ -104,8 +169,9 @@ function App() {
     executorName: string;
   }) => {
     if (editingLog) {
+      const logId = editingLog.id;
       updateMutation.mutate(
-        { id: editingLog.id, ...formData },
+        { id: logId, ...formData },
         {
           onSuccess: () => {
             setIsFormSuccess(true);
@@ -113,6 +179,16 @@ function App() {
               setIsModalOpen(false);
               setIsFormSuccess(false);
               showNotification('success', 'Запись успешно обновлена');
+              
+              // Wait 150ms for the modal close animation to be mid-way through before highlighting
+              setTimeout(() => {
+                setUpdatedLogId(logId);
+
+                // Remove blue animation highlight after 3.5s
+                setTimeout(() => {
+                  setUpdatedLogId(null);
+                }, 3500);
+              }, 150);
             }, 600);
           },
           onError: (err: any) => {
@@ -128,15 +204,18 @@ function App() {
           setTimeout(() => {
             setIsModalOpen(false);
             setIsFormSuccess(false);
-
-            // Trigger the row slide-down animation ONLY after the modal is closed!
-            setNewLogId(newLog.id);
             showNotification('success', 'Запись успешно добавлена в журнал');
 
-            // Remove green animation highlight after 3.5s
+            // Wait 150ms for the modal close animation to be mid-way through before highlighting
             setTimeout(() => {
-              setNewLogId(null);
-            }, 3500);
+              // Trigger the row slide-down animation mid-way through closing!
+              setNewLogId(newLog.id);
+
+              // Remove green animation highlight after 3.5s
+              setTimeout(() => {
+                setNewLogId(null);
+              }, 3500);
+            }, 150);
           }, 600);
         },
         onError: (err: any) => {
@@ -159,7 +238,7 @@ function App() {
     });
   };
 
-  const totalEntries = workLogs.length;
+  const totalEntries = totalLogsCount;
   const uniqueExecutors = new Set(workLogs.map((wl) => wl.executorName)).size;
   const todayEntries = workLogs.filter((wl) => {
     const logDate = new Date(wl.date).toDateString();
@@ -213,7 +292,7 @@ function App() {
             <span className={styles.metricTitle}>Всего записей</span>
             <BarChart3 className={styles.metricIconAccent} size={20} />
           </div>
-          <span className={styles.metricValue}>{isLoadingLogs ? '...' : totalEntries}</span>
+          <span className={styles.metricValue}>{showMetricsLoader ? '...' : totalEntries}</span>
           <span className={styles.metricDesc}>за все время</span>
         </div>
 
@@ -222,7 +301,7 @@ function App() {
             <span className={styles.metricTitle}>Исполнителей</span>
             <Users className={styles.metricIconAccent} size={20} />
           </div>
-          <span className={styles.metricValue}>{isLoadingLogs ? '...' : uniqueExecutors}</span>
+          <span className={styles.metricValue}>{showMetricsLoader ? '...' : uniqueExecutors}</span>
           <span className={styles.metricDesc}>активных бригадиров</span>
         </div>
 
@@ -231,7 +310,7 @@ function App() {
             <span className={styles.metricTitle}>За сегодня</span>
             <CalendarDays className={styles.metricIconAccent} size={20} />
           </div>
-          <span className={styles.metricValue}>{isLoadingLogs ? '...' : todayEntries}</span>
+          <span className={styles.metricValue}>{showMetricsLoader ? '...' : todayEntries}</span>
           <span className={styles.metricDesc}>выполнено смен</span>
         </div>
       </section>
@@ -267,6 +346,13 @@ function App() {
           sortOrder={sortOrder}
           setSortOrder={setSortOrder}
           newLogId={newLogId}
+          updatedLogId={updatedLogId}
+          onLoadMore={fetchNextPage}
+          hasNextPage={!!hasNextPage}
+          isFetchingNextPage={isFetchingNextPage}
+          limit={limit}
+          setLimit={setLimit}
+          totalLogsCount={totalLogsCount}
         />
       </main>
 
@@ -296,7 +382,7 @@ function App() {
               <span className={styles.metricTitle}>Всего записей</span>
               <BarChart3 className={styles.metricIconAccent} size={20} />
             </div>
-            <span className={styles.metricValue}>{isLoadingLogs ? '...' : totalEntries}</span>
+            <span className={styles.metricValue}>{showMetricsLoader ? '...' : totalEntries}</span>
             <span className={styles.metricDesc}>за все время</span>
           </div>
 
@@ -305,7 +391,7 @@ function App() {
               <span className={styles.metricTitle}>Исполнителей</span>
               <Users className={styles.metricIconAccent} size={20} />
             </div>
-            <span className={styles.metricValue}>{isLoadingLogs ? '...' : uniqueExecutors}</span>
+            <span className={styles.metricValue}>{showMetricsLoader ? '...' : uniqueExecutors}</span>
             <span className={styles.metricDesc}>активных бригадиров</span>
           </div>
 
@@ -314,7 +400,7 @@ function App() {
               <span className={styles.metricTitle}>За сегодня</span>
               <CalendarDays className={styles.metricIconAccent} size={20} />
             </div>
-            <span className={styles.metricValue}>{isLoadingLogs ? '...' : todayEntries}</span>
+            <span className={styles.metricValue}>{showMetricsLoader ? '...' : todayEntries}</span>
             <span className={styles.metricDesc}>выполнено смен</span>
           </div>
         </div>
