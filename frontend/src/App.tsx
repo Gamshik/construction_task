@@ -119,6 +119,16 @@ function App() {
   const [newLogId, setNewLogId] = useState<string | null>(null);
   const [updatedLogId, setUpdatedLogId] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (!isModalOpen) {
+      // Clear editing log only after the modal's close animation completes (380ms)
+      const timer = setTimeout(() => {
+        setEditingLog(null);
+      }, 380);
+      return () => clearTimeout(timer);
+    }
+  }, [isModalOpen]);
+
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     const saved = localStorage.getItem('theme');
     return (saved === 'light' || saved === 'dark') ? saved : 'dark';
@@ -184,7 +194,7 @@ function App() {
       updateMutation.mutate(
         { id: logId, ...formData },
         {
-          onSuccess: () => {
+          onSuccess: (updatedLog) => {
             setIsFormSuccess(true);
             setTimeout(() => {
               setIsModalOpen(false);
@@ -193,7 +203,7 @@ function App() {
               
               // Wait 150ms for the modal close animation to be mid-way through before highlighting
               setTimeout(() => {
-                setUpdatedLogId(logId);
+                setUpdatedLogId(updatedLog.id);
 
                 // Remove blue animation highlight after 3.5s
                 setTimeout(() => {
