@@ -8,11 +8,16 @@ import { DeleteWorkLogService } from '@application/use-cases/DeleteWorkLog.servi
 import { WorkLogController } from '../controllers/WorkLog.controller';
 import { WorkTypeModule } from './WorkType.module';
 
+/**
+ * Функциональный модуль NestJS для управления журналом производства строительных работ.
+ * Собирает вместе контроллер, юзкейсы и внедряет зависимость репозитория по интерфейсному порту.
+ */
 @Module({
-  imports: [WorkTypeModule],
+  imports: [WorkTypeModule], // Требуется для проверки существования типов работ при добавлении записей
   controllers: [WorkLogController],
   providers: [
     PrismaService,
+    // Связывание выходного порта репозитория с его конкретной инфраструктурной реализацией на Prisma
     {
       provide: 'WorkLogRepositoryPort',
       useClass: PrismaWorkLogRepository,
@@ -24,3 +29,4 @@ import { WorkTypeModule } from './WorkType.module';
   ],
 })
 export class WorkLogModule {}
+
