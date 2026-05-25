@@ -44,11 +44,19 @@ export const WorkLogTable: React.FC<WorkLogTableProps> = ({
 }) => {
   const [showSkeleton, setShowSkeleton] = useState(false);
   const prevCountRef = useRef(limit);
+  const wasEmptyRef = useRef(false);
 
   // Keep track of page limit changes
   useEffect(() => {
     prevCountRef.current = limit;
   }, [limit]);
+
+  // Keep track of whether the list was empty on the last successful load
+  useEffect(() => {
+    if (!isLoading && !isFetching) {
+      wasEmptyRef.current = workLogs.length === 0;
+    }
+  }, [workLogs, isLoading, isFetching]);
 
   // Keep track of the last non-empty row count to prevent layout jumps when refetching
   useEffect(() => {
@@ -74,8 +82,8 @@ export const WorkLogTable: React.FC<WorkLogTableProps> = ({
     setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
   };
 
-  const isRefetchingEmpty = workLogs.length === 0 && isFetching;
-  const isSkeletonActive = showSkeleton || isRefetchingEmpty;
+  const isRefetchingEmpty = workLogs.length === 0 && isFetching && !wasEmptyRef.current;
+  const isSkeletonActive = (showSkeleton || isRefetchingEmpty) && !wasEmptyRef.current;
 
   // Render empty state ONLY when fully loaded and there are indeed no records
   if (workLogs.length === 0 && !isSkeletonActive) {
