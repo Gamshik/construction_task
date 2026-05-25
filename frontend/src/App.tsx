@@ -76,8 +76,19 @@ function App() {
 
   const { data: workTypes = [], isError: isTypesError } = useWorkTypes();
 
-  // Accumulate flat array representation of paginated data rows
-  const workLogs = data ? data.pages.flatMap((page) => page.data) : [];
+  // Accumulate flat array representation of paginated data rows, filtering out any duplicate IDs that can arise from shifting database offsets during refetches or boundary shifts.
+  const workLogs: WorkLog[] = [];
+  const seenIds = new Set<string>();
+  if (data) {
+    for (const page of data.pages) {
+      for (const log of page.data) {
+        if (!seenIds.has(log.id)) {
+          seenIds.add(log.id);
+          workLogs.push(log);
+        }
+      }
+    }
+  }
   const totalLogsCount = data?.pages[0]?.meta.total ?? workLogs.length;
 
   const filteredAndSortedLogs = workLogs;
